@@ -1,4 +1,1219 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Saturday Racebook</title>
-<style>body{font-family:system-ui,sans-serif;background:#F2F4EF;color:#15201A;display:grid;place-items:center;min-height:100vh;margin:0}@media (prefers-color-scheme:dark){body{background:#0D1411;color:#E3E9E4}}</style></head>
-<body><p>Saturday Racebook is being set up.</p></body></html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.github.com; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F2F4EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1411" media="(prefers-color-scheme: dark)">
+<title>Saturday Racebook</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2311753F'/%3E%3Cpath d='M8 23V9h8.5a4.5 4.5 0 0 1 0 9H12m3 0 5 5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a race-day book. Sticky masthead with tabs; meetings strip; race rows that open into a runner ledger. */
+:root{
+  --paper:#F2F4EF; --card:#FFFFFF; --ink:#15201A; --ink-2:#52615A; --ink-3:#7B8882; --line:#D6DDD4; --line-2:#E8ECE6;
+  --turf:#11753F; --turf-ink:#0F6A39; --turf-soft:#E2EFE6; --on-turf:#FFFFFF;
+  --tote:#9C6410; --tote-soft:#F5EAD6;
+  --win:#16774A; --loss:#AE3E2A; --wait:#69756F; --warn:#9C6410;
+  --firm:#B8962E; --good:#3B8A4C; --soft:#C47F22; --heavy:#7A4727; --synth:#53668C;
+  --cloth:#15201A; --on-cloth:#FFFFFF; --chart:#11753F; --grid:#E3E8E1;
+  --f-display:"Big Shoulders Display","Arial Narrow","Roboto Condensed",sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0D1411; --card:#141D18; --ink:#E3E9E4; --ink-2:#A2AFA7; --ink-3:#7E8B84; --line:#27342D; --line-2:#1C2722;
+  --turf:#3FA870; --turf-ink:#6CCB98; --turf-soft:#163024; --on-turf:#07120C;
+  --tote:#E3A84A; --tote-soft:#2D2312;
+  --win:#5BC68D; --loss:#E57F68; --wait:#8E9A94; --warn:#E3A84A;
+  --firm:#D6B75A; --good:#5FB671; --soft:#E1A24A; --heavy:#B37C55; --synth:#8DA0C7;
+  --cloth:#E3E9E4; --on-cloth:#0D1411; --chart:#3FA870; --grid:#22302A; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --paper:#0D1411; --card:#141D18; --ink:#E3E9E4; --ink-2:#A2AFA7; --ink-3:#7E8B84; --line:#27342D; --line-2:#1C2722;
+  --turf:#3FA870; --turf-ink:#6CCB98; --turf-soft:#163024; --on-turf:#07120C;
+  --tote:#E3A84A; --tote-soft:#2D2312;
+  --win:#5BC68D; --loss:#E57F68; --wait:#8E9A94; --warn:#E3A84A;
+  --firm:#D6B75A; --good:#5FB671; --soft:#E1A24A; --heavy:#B37C55; --synth:#8DA0C7;
+  --cloth:#E3E9E4; --on-cloth:#0D1411; --chart:#3FA870; --grid:#22302A; color-scheme:dark; }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--turf-ink)}
+:focus-visible{outline:2px solid var(--turf);outline-offset:2px;border-radius:3px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)} .faint{color:var(--ink-3)}
+h1,h2,h3{text-wrap:balance;margin:0}
+
+/* Masthead */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+.mast{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-block:12px 8px}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:28px;letter-spacing:.02em;text-transform:uppercase;line-height:1}
+.brand .sub{font-size:12px;color:var(--ink-2);letter-spacing:.06em;text-transform:uppercase}
+.live{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-2)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--wait);flex:none}
+.dot.fresh{background:var(--win);box-shadow:0 0 0 3px color-mix(in srgb,var(--win) 25%,transparent)}
+.btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:7px 12px;cursor:pointer;font-weight:600;font-size:13px;line-height:1.1}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--turf);border-color:var(--turf);color:var(--on-turf)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.small{padding:4px 9px;font-size:12px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-bottom:-1px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:9px 12px 10px;font-weight:600;font-size:13.5px;color:var(--ink-2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--turf)}
+.tab:hover{color:var(--ink)}
+
+main{padding-block:18px 60px}
+.view{display:flex;flex-direction:column;gap:18px}
+.section-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.section-h h2{font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.02em;text-transform:uppercase}
+.section-h .aside{margin-left:auto;font-size:12.5px;color:var(--ink-2)}
+.label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+
+/* Date bar */
+.datebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.datebar .day{font-family:var(--f-display);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase;letter-spacing:.01em;margin-right:6px}
+.datebar select{border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:6px 8px}
+
+/* Meetings */
+.meets{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.meet{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 12px 11px;display:flex;flex-direction:column;gap:7px;min-width:0}
+.meet:hover{border-color:var(--ink-3)}
+.meet[aria-pressed="true"]{border-color:var(--turf);box-shadow:inset 0 0 0 1px var(--turf)}
+.meet .mt{display:flex;align-items:baseline;gap:8px}
+.meet .trk{font-family:var(--f-display);font-weight:800;font-size:22px;line-height:1;text-transform:uppercase;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meet .stt{font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.06em}
+.meet .rail{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meet .foot{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+
+/* Going scale (the track rating 1-10) */
+.going{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:12.5px;white-space:nowrap}
+.going .gs{display:inline-flex;gap:2px}
+.going .gs i{display:block;width:5px;height:12px;border-radius:1px;opacity:.22}
+.going .gs i.f{background:var(--firm)} .going .gs i.g{background:var(--good)} .going .gs i.s{background:var(--soft)} .going .gs i.h{background:var(--heavy)}
+.going .gs i.on{opacity:1}
+.going.firm .gl{color:var(--firm)} .going.good .gl{color:var(--good)} .going.soft .gl{color:var(--soft)} .going.heavy .gl{color:var(--heavy)} .going.synthetic .gl{color:var(--synth)}
+.going.big .gs i{width:7px;height:16px}
+
+/* Chips */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+.chip.final{border-color:transparent;background:var(--line-2);color:var(--ink-2)}
+.chip.field{border-color:var(--tote);color:var(--tote)}
+.chip.live{border-color:transparent;background:var(--tote-soft);color:var(--tote)}
+.chip.won{border-color:transparent;background:color-mix(in srgb,var(--win) 16%,transparent);color:var(--win)}
+.chip.lost{border-color:transparent;background:color-mix(in srgb,var(--loss) 14%,transparent);color:var(--loss)}
+.chip.pending,.chip.void,.chip.unmatched{color:var(--wait)}
+.tag{display:inline-block;font-size:11px;line-height:1.3;padding:1px 6px;border-radius:4px;background:var(--line-2);color:var(--ink-2);margin:1px 3px 1px 0;white-space:nowrap}
+.tag.bad{background:color-mix(in srgb,var(--loss) 14%,transparent);color:var(--loss)}
+.tag.excuse{background:var(--tote-soft);color:var(--tote)}
+
+/* Race rows */
+.races{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--card);overflow:hidden}
+.race{border-top:1px solid var(--line)}
+.race:first-child{border-top:0}
+.rhead{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 14px}
+.rhead:hover{background:color-mix(in srgb,var(--line-2) 55%,transparent)}
+.rno{font-family:var(--f-display);font-weight:800;font-size:26px;line-height:1;color:var(--ink)}
+.rno small{display:block;font-family:var(--f-mono);font-weight:500;font-size:11px;color:var(--ink-3);margin-top:3px}
+.rname{font-weight:700;font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rmeta{font-size:12.5px;color:var(--ink-2);display:flex;gap:10px;flex-wrap:wrap}
+.rres{text-align:right;font-size:12.5px;min-width:0}
+.rres b{font-weight:700;font-size:13.5px}
+.race[open-race] .rhead{background:color-mix(in srgb,var(--turf-soft) 60%,transparent)}
+.rbody{padding:4px 14px 16px;display:flex;flex-direction:column;gap:12px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--ink-2)}
+.facts b{color:var(--ink);font-weight:600}
+.cond{font-size:12px;color:var(--ink-3);max-width:80ch}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--card)}
+td{padding:8px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.scr td{color:var(--ink-3)}
+tr.scr .hn{text-decoration:line-through}
+tr.clickable{cursor:pointer}
+tr.clickable:hover td{background:color-mix(in srgb,var(--line-2) 50%,transparent)}
+tr.expanded td{background:color-mix(in srgb,var(--turf-soft) 45%,transparent)}
+.pos{font-family:var(--f-display);font-weight:800;font-size:18px;line-height:1}
+.pos.p1{color:var(--turf-ink)}
+.cloth{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 4px;border-radius:3px;background:var(--cloth);color:var(--on-cloth);font-family:var(--f-mono);font-weight:600;font-size:12px}
+.hn{font-weight:700}
+.bar{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);margin-left:4px}
+.sub{font-size:12px;color:var(--ink-2)}
+.settle{font-family:var(--f-mono);font-size:12px;white-space:nowrap}
+.settle .up{color:var(--win)} .settle .dn{color:var(--loss)}
+.formrow td{padding:0;background:var(--paper)}
+.form-in{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+
+/* Cards, tiles */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .v{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.tile .v.pos{color:var(--win)} .tile .v.neg{color:var(--loss)}
+.tile .s{font-size:12px;color:var(--ink-2)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+
+/* Forms */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 12px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:11.5px;font-weight:600;color:var(--ink-2)}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--paper);border-radius:var(--r);padding:7px 9px;min-width:0;width:100%}
+.field textarea{min-height:80px;resize:vertical}
+.field.wide{grid-column:1/-1}
+.formbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--ink-3)}
+details.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+details.panel>summary{cursor:pointer;padding:12px 14px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px}
+details.panel>summary::-webkit-details-marker{display:none}
+details.panel>summary::before{content:"+";font-family:var(--f-mono);color:var(--turf-ink);width:12px}
+details.panel[open]>summary::before{content:"–"}
+details.panel>.pin{padding:0 14px 14px;display:flex;flex-direction:column;gap:12px}
+
+/* Feed */
+.feed{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;display:flex;flex-direction:column;gap:6px}
+.item .ih{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+.item .it{white-space:pre-wrap;overflow-wrap:anywhere}
+.item .ia{margin-left:auto;display:flex;gap:6px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.fchip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-2)}
+.fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+/* Charts */
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--ink-3);font-family:var(--f-mono);font-size:11px}
+.chart .gridl{stroke:var(--grid);stroke-width:1}
+.chart .zero{stroke:var(--ink-3);stroke-width:1}
+.chart .ln{fill:none;stroke:var(--chart);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .ar{fill:var(--chart);opacity:.12}
+.chart .pt{fill:var(--chart);stroke:var(--card);stroke-width:2}
+.chart .hov{stroke:var(--ink-3);stroke-dasharray:3 3}
+.chartbox{position:relative}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:12px;padding:6px 8px;border-radius:5px;white-space:nowrap;transform:translate(-50%,-110%);opacity:0;transition:opacity .1s}
+.tip.on{opacity:1}
+.calib{display:flex;flex-direction:column;gap:12px}
+.cal-row{display:grid;grid-template-columns:86px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:12.5px}
+.cal-track{position:relative;height:16px;background:var(--line-2);border-radius:3px}
+.cal-bar{position:absolute;left:0;top:0;bottom:0;background:var(--chart);border-radius:0 3px 3px 0}
+.cal-exp{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:1px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink-2);flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:10px;border-radius:2px;background:var(--chart)}
+.sw.tick{width:2px;height:14px;background:var(--ink)}
+
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:22px;text-align:center;color:var(--ink-2);background:color-mix(in srgb,var(--card) 60%,transparent)}
+.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 14px;border-radius:8px;font-size:13px;max-width:min(92vw,520px);z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1;pointer-events:auto}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.seg button{border:0;background:var(--card);padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}
+.kv dt{color:var(--ink-2)} .kv dd{margin:0}
+
+@media (max-width:640px){
+  .brand h1{font-size:24px}
+  .datebar .day{font-size:28px}
+  .rhead{grid-template-columns:42px minmax(0,1fr);}
+  .rres{grid-column:2;text-align:left}
+  .rno{font-size:22px}
+  .live .lbl{display:none}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+
+/* Odds movement */
+.firm,.drift{font-size:10px;margin-left:3px;vertical-align:1px}
+.firm{color:var(--win)} .drift{color:var(--loss)}
+.spark{display:block;margin:3px 0 0 auto}
+.spark polyline{fill:none;stroke:var(--ink-3);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.spark circle{fill:var(--ink-2)}
+.chip.fav{border-color:transparent;background:var(--turf-soft);color:var(--turf-ink)}
+.chip.flag{border-color:transparent;background:color-mix(in srgb,var(--loss) 12%,transparent);color:var(--loss)}
+.rth{font-size:11.5px;color:var(--ink-3)}
+td.hc{min-width:210px} td.jt{min-width:120px}
+@media (max-width:640px){ td.hc{min-width:170px} .lsx{display:none} }
+.dot.busy{background:var(--tote);box-shadow:0 0 0 3px color-mix(in srgb,var(--tote) 25%,transparent)}
+
+/* Connect screen */
+.connect{max-width:620px;margin:28px auto 0;display:flex;flex-direction:column;gap:16px}
+.connect h2{font-family:var(--f-display);font-weight:800;font-size:30px;text-transform:uppercase;letter-spacing:.01em}
+.connect ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.connect code{font-family:var(--f-mono);font-size:12.5px;background:var(--line-2);padding:1px 5px;border-radius:4px}
+.err{color:var(--loss);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="mast">
+      <div class="brand"><h1>Saturday Racebook</h1><span class="sub">Metro meetings</span></div>
+      <div class="live"><span class="dot" id="liveDot"></span><span id="lastUpd">Loading…</span><button class="btn small" id="refreshBtn" type="button" hidden>Update now</button></div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" id="tab-racebook" data-view="racebook" aria-selected="true">Racebook</button>
+      <button class="tab" role="tab" id="tab-picks" data-view="picks" aria-selected="false">My picks</button>
+      <button class="tab" role="tab" id="tab-intel" data-view="intel" aria-selected="false">Intel</button>
+      <button class="tab" role="tab" id="tab-lookup" data-view="lookup" aria-selected="false">Lookup</button>
+      <button class="tab" role="tab" id="tab-data" data-view="data" aria-selected="false">Data</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="view" id="view-connect" hidden></section>
+  <section class="view" id="view-racebook" role="tabpanel" aria-labelledby="tab-racebook"></section>
+  <section class="view" id="view-picks" role="tabpanel" aria-labelledby="tab-picks" hidden></section>
+  <section class="view" id="view-intel" role="tabpanel" aria-labelledby="tab-intel" hidden></section>
+  <section class="view" id="view-lookup" role="tabpanel" aria-labelledby="tab-lookup" hidden></section>
+  <section class="view" id="view-data" role="tabpanel" aria-labelledby="tab-data" hidden></section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const hkey = s => String(s || '').toLowerCase().replace(/\s*\([a-z]{2,3}\)\s*$/i, '').replace(/\s+/g, ' ').trim();
+const pkey = s => String(s || '').toLowerCase().replace(/\s*\(a\d+(\.\d+)?\)\s*/g, '').replace(/\s+/g, ' ').trim();
+const num = v => (v === null || v === undefined || v === '' || isNaN(+v)) ? null : +v;
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const money = (v, sign = false) => v == null || !isFinite(v) ? '–' : (v < 0 ? '−' : (sign && v > 0 ? '+' : '')) + '$' + Math.abs(v).toFixed(2);
+const price = v => v == null || !isFinite(v) ? '–' : '$' + (+v).toFixed(2);
+const pct = (v, d = 1) => v == null || !isFinite(v) ? '–' : (v * 100).toFixed(d) + '%';
+const spct = (v, d = 1) => v == null || !isFinite(v) ? '–' : (v > 0 ? '+' : (v < 0 ? '−' : '')) + Math.abs(v * 100).toFixed(d) + '%';
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const pd = d => { const [y, m, dd] = String(d).split('-').map(Number); return new Date(y, (m || 1) - 1, dd || 1); };
+const fdate = (d, opt = 's') => { if (!d) return ''; const x = pd(d); if (opt === 'l') return DAY[x.getDay()] + ' ' + x.getDate() + ' ' + MON[x.getMonth()] + ' ' + x.getFullYear(); if (opt === 'm') return x.getDate() + ' ' + MON[x.getMonth()] + ' ' + String(x.getFullYear()).slice(2); return x.getDate() + ' ' + MON[x.getMonth()]; };
+const iso = (t = new Date()) => t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+const ago = s => { const ms = Date.now() - Date.parse(s); if (!s || isNaN(ms)) return 'never'; const m = Math.round(ms / 60000); if (m < 1) return 'just now'; if (m < 60) return m + ' min ago'; const h = Math.round(m / 60); if (h < 36) return h + ' h ago'; return Math.round(h / 24) + ' days ago'; };
+const raceId = (date, slug, n) => `${date}_${slug}_r${n}`;
+const raceUrl = r => r ? (r.url || `https://www.racing.com/form/${r.date}/${r.slug}/race/${r.n}`) : '';
+const meetUrl = m => m ? (m.url || `https://www.racing.com/form/${m.date}/${m.slug}/race/1`) : '';
+const STATE_ORDER = { VIC: 1, NSW: 2, QLD: 3, SA: 4, WA: 5, TAS: 6, ACT: 7, NT: 8 };
+const toast = (msg, ms = 4200) => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), ms); };
+const ls = { get(k, d) { try { const v = localStorage.getItem('rb:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem('rb:' + k, JSON.stringify(v)); } catch (e) { } } };
+
+function going(rt) {
+  const m = String(rt || '').trim().match(/^(Firm|Good|Soft|Heavy|Synthetic)\s*(\d+)?/i);
+  if (!m) return { band: null, n: null, label: rt || '–' };
+  const band = m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
+  return { band, n: m[2] ? +m[2] : null, label: band + (m[2] ? ' ' + m[2] : '') };
+}
+function goingHTML(rt, big) {
+  const g = going(rt);
+  if (!g.band) return `<span class="going"><span class="gl faint">${esc(g.label)}</span></span>`;
+  let bars = '';
+  if (g.n) for (let i = 1; i <= 10; i++) bars += `<i class="${i <= 2 ? 'f' : i <= 4 ? 'g' : i <= 7 ? 's' : 'h'}${i <= g.n ? ' on' : ''}"></i>`;
+  return `<span class="going ${g.band.toLowerCase()}${big ? ' big' : ''}" title="Track rating ${esc(g.label)} on the 1–10 scale"><span class="gl">${esc(g.label)}</span>${bars ? `<span class="gs" aria-hidden="true">${bars}</span>` : ''}</span>`;
+}
+const distBand = d => !d ? '–' : d <= 1200 ? 'Up to 1200m' : d <= 1600 ? '1201–1600m' : d <= 2000 ? '1601–2000m' : '2001m+';
+const oddsBand = o => !o ? '–' : o < 3 ? 'Under $3' : o < 6 ? '$3–$5.99' : o < 12 ? '$6–$11.99' : '$12+';
+const runnersOf = r => Array.isArray(r?.rn) ? r.rn : [];
+const isScr = x => /SCR/i.test(x?.pt || '');
+const fieldSize = r => runnersOf(r).filter(x => !/SCR|EMG/i.test(x.pt || '')).length;
+const isFinal = r => r?.stage === 'final' || runnersOf(r).some(x => x.p === 1);
+const winnerOf = r => runnersOf(r).find(x => x.p === 1);
+const EXCUSE = /slow start|awkward start|held up|wide|keen|interference|laid|hung|tactics|track not suited/i;
+const BAD = /vet: issue|clearance needed|bled|fell|fatal|lame|below expectations|to be spelled|late scratching/i;
+const tagHTML = tg => (tg || []).map(t => `<span class="tag${BAD.test(t) ? ' bad' : EXCUSE.test(t) ? ' excuse' : ''}">${esc(t)}</span>`).join('');
+function settleHTML(s) {
+  if (!s) return '<span class="faint">–</span>';
+  const m = String(s).match(/^(\d+)\D*\/(\d+)/);
+  if (!m) return esc(s);
+  const a = +m[1], b = +m[2];
+  const cls = b < a ? 'up' : b > a ? 'dn' : '';
+  return `<span class="settle">${a}<span class="faint">→</span><span class="${cls}">${b}</span></span>`;
+}
+
+/* ---------- state ---------- */
+const S = {
+  ready: false, lastSync: 0, syncErr: null, running: false, fastUntil: 0,
+  meetings: [], dates: [], selDate: null, selMeet: ls.get('meet', null), openRace: null, openRunner: null,
+  dayRaces: [], allRaces: null,
+  picks: [], intel: [], hiddenNews: [], status: null, settings: { commission: 8, stake: 10 },
+  view: 'racebook', intelFilter: 'all', intelTrack: '', intelQ: '', lookup: ls.get('lookup', { kind: 'horse', q: '' }), splitBy: 'trk', pickPrefill: null
+};
+const safeUrl = u => /^https?:\/\//i.test(String(u || '').trim()) ? String(u).trim() : '';
+const uid = p => p + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+/* ---------- GitHub: the private repository is the database ---------- */
+const API = 'https://api.github.com';
+const conn = { owner: '', repo: 'racebook-data', branch: 'main', token: '' };
+(() => {
+  const c = ls.get('conn', null);
+  if (c && c.token) Object.assign(conn, c);
+  else { const h = location.hostname.match(/^([a-z0-9-]+)\.github\.io$/i); if (h) conn.owner = h[1]; }
+})();
+class GHError extends Error { constructor(status, msg) { super(msg); this.status = status; } }
+async function gh(path, opts = {}) {
+  let res;
+  try {
+    res = await fetch(API + path, {
+      method: opts.method || 'GET', body: opts.body, cache: 'no-store',
+      headers: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', Authorization: 'Bearer ' + conn.token, ...(opts.body ? { 'Content-Type': 'application/json' } : {}), ...(opts.headers || {}) }
+    });
+  } catch (e) { throw new GHError(0, 'offline'); }
+  if (!res.ok) { let m = ''; try { m = (await res.json()).message || ''; } catch (e) { } throw new GHError(res.status, m || res.statusText); }
+  return res;
+}
+const repoPath = () => `/repos/${encodeURIComponent(conn.owner)}/${encodeURIComponent(conn.repo)}`;
+const b64 = s => { const b = new TextEncoder().encode(s); let bin = ''; for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(bin); };
+const unb64 = s => new TextDecoder().decode(Uint8Array.from(atob(String(s).replace(/\s/g, '')), c => c.charCodeAt(0)));
+
+/* small IndexedDB cache so the page opens instantly and only changed files are downloaded */
+const IDB = (() => {
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => { try { const r = indexedDB.open('racebook', 1); r.onupgradeneeded = () => r.result.createObjectStore('files'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } }));
+  const run = async (mode, fn) => { const db = await open(); return new Promise((res, rej) => { const t = db.transaction('files', mode); const req = fn(t.objectStore('files')); t.oncomplete = () => res(req ? req.result : undefined); t.onerror = () => rej(t.error); }); };
+  return {
+    get: k => run('readonly', st => st.get(k)).catch(() => undefined),
+    set: (k, v) => run('readwrite', st => st.put(v, k)).catch(() => { }),
+    del: k => run('readwrite', st => st.delete(k)).catch(() => { }),
+    clear: () => run('readwrite', st => st.clear()).catch(() => { })
+  };
+})();
+const FILES = new Map();
+const WANT = /^(data\/(index|status|news)\.json|data\/days\/\d{4}-\d{2}-\d{2}\.json|user\/(picks|intel|settings)\.json)$/;
+const cacheKey = p => conn.owner + '/' + conn.repo + ':' + p;
+
+async function loadCache() {
+  const paths = await IDB.get(cacheKey('__paths'));
+  if (!Array.isArray(paths)) return false;
+  for (const p of paths) { const f = await IDB.get(cacheKey(p)); if (f && f.json) FILES.set(p, f); }
+  return FILES.size > 0;
+}
+let syncing = null;
+function sync() {
+  if (!conn.token) return Promise.resolve();
+  if (syncing) return syncing;
+  syncing = (async () => {
+    try {
+      const tree = await (await gh(`${repoPath()}/git/trees/${encodeURIComponent(conn.branch)}?recursive=1`)).json();
+      const want = (tree.tree || []).filter(x => x.type === 'blob' && WANT.test(x.path));
+      let changed = 0;
+      const queue = want.filter(x => !FILES.has(x.path) || FILES.get(x.path).sha !== x.sha);
+      let i = 0;
+      await Promise.all(Array.from({ length: Math.min(6, queue.length) }, async () => {
+        while (i < queue.length) {
+          const x = queue[i++];
+          const res = await gh(`${repoPath()}/git/blobs/${x.sha}`, { headers: { Accept: 'application/vnd.github.raw+json' } });
+          let json; try { json = JSON.parse(await res.text()); } catch (e) { continue; }
+          const f = { sha: x.sha, json };
+          FILES.set(x.path, f); IDB.set(cacheKey(x.path), f); changed++;
+        }
+      }));
+      for (const p of [...FILES.keys()]) if (!want.some(x => x.path === p)) { FILES.delete(p); IDB.del(cacheKey(p)); changed++; }
+      IDB.set(cacheKey('__paths'), [...FILES.keys()]);
+      S.lastSync = Date.now(); S.syncErr = null;
+      if (changed || !S.ready) { buildState(); S.ready = true; renderAll(); } else renderLive();
+      checkRunning();
+    } catch (e) {
+      S.syncErr = e;
+      if (e.status === 401) { showConnect('GitHub rejected the saved key. It may have expired or been deleted. Paste a new one.'); }
+      else if (e.status === 404 && !S.ready) { showConnect(`This key can’t see ${conn.owner}/${conn.repo}. Check the repository name, and that the key was given access to it.`); }
+      renderLive();
+    } finally { syncing = null; }
+  })();
+  return syncing;
+}
+async function checkRunning() {
+  try {
+    const r = await (await gh(`${repoPath()}/actions/runs?per_page=3`)).json();
+    const was = S.running;
+    S.running = (r.workflow_runs || []).some(x => x.status === 'in_progress' || x.status === 'queued');
+    if (S.running) S.fastUntil = Math.max(S.fastUntil, Date.now() + 3 * 60e3);
+    if (was !== S.running) renderLive();
+  } catch (e) { /* the key may not have Actions access; the page still works */ }
+}
+let pollT = null;
+function schedulePoll() {
+  clearTimeout(pollT);
+  if (!conn.token) return;
+  const ms = document.hidden ? 5 * 60e3 : Date.now() < S.fastUntil ? 20e3 : 60e3;
+  pollT = setTimeout(async () => { await sync(); schedulePoll(); }, ms);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && conn.token) { sync(); schedulePoll(); } });
+
+function buildState() {
+  const days = [...FILES.entries()].filter(([p]) => p.startsWith('data/days/')).map(([, f]) => f.json).filter(d => d && d.date);
+  S.meetings = days.flatMap(d => (d.meetings || []).map(m => ({ ...m, id: m.id || d.date + '_' + m.slug, date: d.date })));
+  S.dates = [...new Set(days.filter(d => (d.meetings || []).length).map(d => d.date))].sort().reverse();
+  S.allRaces = new Map();
+  days.forEach(d => (d.races || []).forEach(r => { const id = r.id || raceId(d.date, r.slug, r.n); S.allRaces.set(id, { ...r, id, date: d.date }); }));
+  S.status = FILES.get('data/status.json')?.json || null;
+  const mine = FILES.get('user/intel.json')?.json || {};
+  S.hiddenNews = mine.hidden || [];
+  const hidden = new Set(S.hiddenNews);
+  const news = (FILES.get('data/news.json')?.json?.items || []).filter(i => !hidden.has(i.id));
+  S.intel = (mine.items || []).concat(news).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  S.picks = FILES.get('user/picks.json')?.json?.items || [];
+  S.settings = { commission: 8, stake: 10, ...(FILES.get('user/settings.json')?.json || {}) };
+  if (!S.selDate || !S.dates.includes(S.selDate)) pickDefaultDate();
+  else S.dayRaces = allList().filter(r => r.date === S.selDate);
+}
+function pickDefaultDate() {
+  const today = iso();
+  const upcoming = S.dates.filter(d => d >= today).sort();
+  selectDay(upcoming.length ? upcoming[0] : (S.dates[0] || null));
+}
+function selectDay(d) {
+  S.selDate = d; S.openRace = null; S.openRunner = null;
+  S.dayRaces = d ? allList().filter(r => r.date === d) : [];
+}
+const loadAllRaces = () => Promise.resolve(S.allRaces || new Map());
+const allList = () => S.allRaces ? [...S.allRaces.values()] : [];
+
+/* write one of the user/*.json files: read, change, commit; retried if the file changed meanwhile */
+async function fetchFile(path) {
+  try {
+    const j = await (await gh(`${repoPath()}/contents/${path}?ref=${encodeURIComponent(conn.branch)}`)).json();
+    return { sha: j.sha, json: JSON.parse(unb64(j.content || '')) };
+  } catch (e) { if (e.status === 404) return null; throw e; }
+}
+async function mutate(path, change, message) {
+  let last;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const cur = attempt === 0 && FILES.get(path) ? FILES.get(path) : await fetchFile(path);
+    const next = change(cur ? JSON.parse(JSON.stringify(cur.json)) : {});
+    const body = { message, content: b64(JSON.stringify(next, null, 1) + '\n'), branch: conn.branch };
+    if (cur && cur.sha) body.sha = cur.sha;
+    try {
+      const j = await (await gh(`${repoPath()}/contents/${path}`, { method: 'PUT', body: JSON.stringify(body) })).json();
+      const f = { sha: j.content.sha, json: next };
+      FILES.set(path, f); IDB.set(cacheKey(path), f); IDB.set(cacheKey('__paths'), [...FILES.keys()]);
+      buildState(); renderAll();
+      return;
+    } catch (e) { last = e; if (e.status === 409 || e.status === 422) continue; throw e; }
+  }
+  throw last;
+}
+const writeErr = e => e.status === 403 ? 'Your key can’t save. Give it “Contents: Read and write” on GitHub.' : e.status === 401 ? 'GitHub rejected your key. Reconnect on the Data tab.' : e.status === 0 ? 'You look offline. Nothing was saved.' : 'Couldn’t save (' + (e.status || '') + ' ' + (e.message || 'error') + ').';
+const addPick = doc => mutate('user/picks.json', j => ({ v: 1, ...j, items: (j.items || []).concat({ id: uid('p'), ...doc }) }), `Pick: ${doc.horse} (${doc.betType} ${price(doc.odds)}) ${doc.trk} R${doc.raceN}`);
+const delPick = id => mutate('user/picks.json', j => ({ ...j, items: (j.items || []).filter(x => x.id !== id) }), 'Delete a pick');
+const addIntel = doc => mutate('user/intel.json', j => ({ v: 1, hidden: [], ...j, items: (j.items || []).concat({ id: uid('i'), ...doc }) }), `Intel: ${doc.text.slice(0, 50)}`);
+const delIntel = id => mutate('user/intel.json', j => {
+  const mineHas = (j.items || []).some(x => x.id === id);
+  return mineHas ? { ...j, items: j.items.filter(x => x.id !== id) } : { ...j, hidden: [...new Set((j.hidden || []).concat(id))] };
+}, 'Remove an intel item');
+const saveSettings = d => mutate('user/settings.json', j => ({ ...j, ...d }), 'Update settings');
+
+/* ---------- connect screen ---------- */
+function showConnect(msg) {
+  const v = $('#view-connect');
+  $('#tabs').hidden = true;
+  $$('.view').forEach(s => s.hidden = s !== v);
+  $('#refreshBtn').hidden = true;
+  setLive(false, 'Not connected');
+  v.innerHTML = `<div class="connect">
+    <h2>Connect your racebook</h2>
+    <p class="muted">This page reads your private <b>${esc(conn.owner || 'your-name')}/${esc(conn.repo)}</b> repository through GitHub. It needs a key that only you hold. The key stays on this device and is sent only to GitHub.</p>
+    ${msg ? `<p class="err">${esc(msg)}</p>` : ''}
+    <div class="card"><div class="label" style="margin-bottom:8px">Make a key (once, about a minute)</div>
+      <ol>
+        <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token ↗</a>.</li>
+        <li>Name it <code>Racebook</code>. Set the expiry as long as GitHub allows.</li>
+        <li>Under <b>Repository access</b>, choose <b>Only select repositories</b> and pick <code>${esc(conn.repo)}</code>.</li>
+        <li>Under <b>Permissions</b>, add <b>Contents: Read and write</b> and <b>Actions: Read and write</b>.</li>
+        <li>Generate the token, copy it, and paste it below.</li>
+      </ol></div>
+    <form id="connForm" class="card fgrid" autocomplete="off">
+      <div class="field wide"><label for="cf-token">Key (fine-grained token)</label><input id="cf-token" type="password" required placeholder="github_pat_…" spellcheck="false"></div>
+      <div class="field"><label for="cf-owner">GitHub username</label><input id="cf-owner" value="${esc(conn.owner)}" required spellcheck="false"></div>
+      <div class="field"><label for="cf-repo">Data repository</label><input id="cf-repo" value="${esc(conn.repo)}" required spellcheck="false"></div>
+      <div class="formbar field wide"><button class="btn primary" type="submit">Connect</button><span class="hint" id="cf-hint">On a new phone or computer, paste the same key again.</span></div>
+    </form>
+  </div>`;
+  $('#connForm').onsubmit = async e => {
+    e.preventDefault();
+    const hint = $('#cf-hint');
+    const next = { owner: $('#cf-owner').value.trim(), repo: $('#cf-repo').value.trim(), branch: 'main', token: $('#cf-token').value.trim() };
+    if (!next.token) return;
+    hint.textContent = 'Checking…';
+    const prev = { ...conn };
+    Object.assign(conn, next);
+    try {
+      const r = await (await gh(repoPath())).json();
+      conn.branch = r.default_branch || 'main';
+      ls.set('conn', { ...conn });
+      if (!r.private) toast('Heads up: this repository is public. Make it private on GitHub to keep the data and your picks to yourself.', 9000);
+      start();
+    } catch (err) {
+      Object.assign(conn, prev);
+      hint.innerHTML = `<span class="err">${esc(err.status === 401 ? 'GitHub didn’t accept that key. Copy it again (it starts with github_pat_).' : err.status === 404 ? 'That key can’t see ' + next.owner + '/' + next.repo + '. Check the name and the key’s repository access.' : err.status === 0 ? 'You look offline.' : 'GitHub said: ' + err.message)}</span>`;
+    }
+  };
+}
+function disconnect() {
+  ls.set('conn', null);
+  conn.token = '';
+  FILES.clear(); IDB.clear();
+  S.ready = false;
+  clearTimeout(pollT);
+  showConnect();
+}
+
+/* ---------- live status + refresh ---------- */
+function setLive(fresh, text, busy) { const d = $('#liveDot'); d.classList.toggle('fresh', !!fresh && !busy); d.classList.toggle('busy', !!busy); $('#lastUpd').innerHTML = text; }
+function renderLive() {
+  if (!conn.token) return;
+  const at = S.status?.lastRun?.at;
+  const sat = new Date().getDay() === 6;
+  const fresh = at && (Date.now() - Date.parse(at)) < (sat ? 40 * 60e3 : 8 * 3600e3);
+  const off = S.syncErr && S.syncErr.status === 0 ? ' · offline' : '';
+  if (S.running) setLive(false, '<span class="lbl">Updating now…</span>', true);
+  else setLive(fresh, (at ? `<span class="lbl">Updated </span>${esc(ago(at))}` : 'Waiting for the first update') + off);
+  $('#refreshBtn').hidden = !S.ready;
+}
+async function requestUpdate() {
+  const btn = $('#refreshBtn');
+  btn.disabled = true; btn.textContent = 'Starting…';
+  try {
+    await gh(`${repoPath()}/actions/workflows/update.yml/dispatches`, { method: 'POST', body: JSON.stringify({ ref: conn.branch, inputs: { mode: 'auto' } }) });
+    toast('Update started. New data usually lands within 3–8 minutes, and this page refreshes itself.', 7000);
+    S.running = true; S.fastUntil = Date.now() + 12 * 60e3; renderLive(); schedulePoll();
+    btn.textContent = 'Started';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Update now'; }, 60000);
+  } catch (e) {
+    toast(e.status === 403 ? 'Your key can’t start updates. Give it “Actions: Read and write” on GitHub, then try again.' : e.status === 404 || e.status === 422 ? 'Couldn’t find the update workflow in ' + conn.repo + '.' : 'Couldn’t start an update (' + (e.status || e.message) + ').', 8000);
+    btn.disabled = false; btn.textContent = 'Update now';
+  }
+}
+
+/* ---------- grading ---------- */
+function gradePick(pk, race) {
+  const g = { status: 'pending', profit: null, outlay: null, clv: null, closing: null, pos: null, won: false, runner: null, note: '' };
+  if (!race) { g.note = 'race not loaded'; return g; }
+  if (!isFinal(race)) return g;
+  const hk = pk.horseKey || hkey(pk.horse);
+  const ru = runnersOf(race).find(x => hkey(x.h) === hk);
+  if (!ru) { g.status = 'unmatched'; g.note = 'horse not found in result'; return g; }
+  g.runner = ru; g.pos = ru.p;
+  if (isScr(ru)) { g.status = 'void'; g.profit = 0; g.outlay = 0; return g; }
+  const stake = num(pk.stake) || 0, o = num(pk.odds) || 0;
+  const comm = String(pk.bookie || '').toLowerCase().includes('betfair') ? (num(S.settings.commission) || 0) / 100 : 0;
+  const fs = fieldSize(race), places = fs >= 8 ? 3 : fs >= 5 ? 2 : 1;
+  const won = ru.p === 1, placed = ru.p != null && ru.p <= places;
+  const plc = num(pk.placeOdds) || num(ru.tp);
+  g.won = won;
+  g.closing = num(ru.bsp) || num(ru.sp);
+  const bt = pk.betType || 'Win';
+  if (bt === 'Lay') {
+    const liab = stake * Math.max(o - 1, 0); g.outlay = liab;
+    if (won) { g.profit = -liab; g.status = 'lost'; } else { g.profit = stake * (1 - comm); g.status = 'won'; }
+  } else if (bt === 'Place') {
+    g.outlay = stake;
+    if (placed) { if (!plc) { g.status = 'placed'; g.note = 'add a place price'; g.profit = null; } else { g.profit = stake * (plc - 1) * (1 - comm); g.status = 'won'; } }
+    else { g.profit = -stake; g.status = 'lost'; }
+  } else if (bt === 'Each way') {
+    g.outlay = 2 * stake; let p = won ? stake * (o - 1) * (1 - comm) : -stake;
+    if (placed) { if (plc) p += stake * (plc - 1) * (1 - comm); else g.note = 'add a place price'; } else p -= stake;
+    g.profit = p; g.status = won ? 'won' : placed ? 'placed' : 'lost';
+  } else {
+    g.outlay = stake;
+    if (won) { g.profit = stake * (o - 1) * (1 - comm); g.status = 'won'; } else { g.profit = -stake; g.status = 'lost'; }
+  }
+  if (o && g.closing && bt !== 'Place') g.clv = bt === 'Lay' ? g.closing / o - 1 : o / g.closing - 1;
+  return g;
+}
+function gradedPicks() {
+  const races = S.allRaces || new Map();
+  S.dayRaces.forEach(r => races.set(r.id, r));
+  return S.picks.map(pk => ({ pk, race: races.get(pk.raceId) || null }))
+    .map(x => ({ ...x, g: gradePick(x.pk, x.race) }))
+    .sort((a, b) => (a.pk.date || '').localeCompare(b.pk.date || '') || (a.pk.trk || '').localeCompare(b.pk.trk || '') || (a.pk.raceN || 0) - (b.pk.raceN || 0) || String(a.pk.createdAt || '').localeCompare(String(b.pk.createdAt || '')));
+}
+const isSettled = x => x.g.profit != null && ['won', 'lost', 'placed'].includes(x.g.status);
+function stats(rows) {
+  const s = rows.filter(isSettled);
+  const profit = s.reduce((a, x) => a + x.g.profit, 0), outlay = s.reduce((a, x) => a + (x.g.outlay || 0), 0);
+  const clv = s.map(x => x.g.clv).filter(v => v != null);
+  return { n: s.length, hits: s.filter(x => x.g.profit > 0).length, profit, outlay, roi: outlay ? profit / outlay : null, clv: mean(clv), clvN: clv.length, avgOdds: mean(s.map(x => num(x.pk.odds)).filter(Boolean)) };
+}
+function calibration(rows) {
+  const pts = [];
+  rows.forEach(x => {
+    if (!x.race || !isFinal(x.race) || !x.g.runner || isScr(x.g.runner)) return;
+    const rated = num(x.pk.rated); if (!rated || rated <= 1) return;
+    const r = runnersOf(x.race).filter(y => !isScr(y) && num(y.sp));
+    const book = r.reduce((a, y) => a + 1 / y.sp, 0);
+    const mk = num(x.g.runner.sp) && book ? (1 / x.g.runner.sp) / book : null;
+    pts.push({ p: 1 / rated, y: x.g.runner.p === 1 ? 1 : 0, mk });
+  });
+  const buckets = [[0, .1, 'Under 10%'], [.1, .2, '10–20%'], [.2, .33, '20–33%'], [.33, .5, '33–50%'], [.5, 1.01, '50%+']].map(([a, b, l]) => {
+    const q = pts.filter(x => x.p >= a && x.p < b);
+    return { l, n: q.length, exp: mean(q.map(x => x.p)), act: q.length ? q.filter(x => x.y).length / q.length : null };
+  });
+  const brier = mean(pts.map(x => (x.p - x.y) ** 2));
+  const mpts = pts.filter(x => x.mk != null);
+  const mbrier = mean(mpts.map(x => (x.mk - x.y) ** 2));
+  const ybrier = mean(mpts.map(x => (x.p - x.y) ** 2));
+  const ae = pts.length ? pts.reduce((a, x) => a + x.y, 0) / pts.reduce((a, x) => a + x.p, 0) : null;
+  return { n: pts.length, buckets, brier, mbrier, ybrier, mN: mpts.length, ae };
+}
+
+/* ---------- rendering: shell ---------- */
+function setView(v) {
+  S.view = v;
+  $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === v)));
+  $$('.view').forEach(s => s.hidden = s.id !== 'view-' + v);
+  if (['picks', 'lookup', 'data'].includes(v) || (v === 'racebook' && S.openRunner)) loadAllRaces();
+  renderView();
+  try { history.replaceState(null, '', '#' + v); } catch (e) { }
+}
+function renderAll() { renderLive(); renderView(); }
+function renderView() {
+  const f = { racebook: renderRacebook, picks: renderPicks, intel: renderIntel, lookup: renderLookup, data: renderData }[S.view];
+  if (f) f();
+}
+
+/* ---------- Racebook ---------- */
+function meetingsFor(date) { return S.meetings.filter(m => m.date === date).sort((a, b) => (STATE_ORDER[a.st] || 9) - (STATE_ORDER[b.st] || 9)); }
+function stageChip(stage, races) {
+  const fin = races.length && races.every(isFinal), some = races.some(isFinal);
+  if (stage === 'abandoned') return '<span class="chip lost">Abandoned</span>';
+  if (fin) return '<span class="chip final">Final</span>';
+  if (some) return '<span class="chip live">Racing</span>';
+  return '<span class="chip field">Fields</span>';
+}
+function renderRacebook() {
+  const v = $('#view-racebook');
+  if (!S.ready) { v.innerHTML = emptyHTML('Loading the racebook…', ''); return; }
+  if (!S.dates.length) { v.innerHTML = emptyHTML('No meetings loaded yet', 'The first update finds the coming Saturday’s metro meetings and backfills past Saturdays. Use Update now to start it.'); return; }
+  const meets = meetingsFor(S.selDate);
+  if (!S.selMeet || !meets.some(m => m.slug === S.selMeet)) S.selMeet = meets[0]?.slug || null;
+  const di = S.dates.indexOf(S.selDate);
+  const dayLabel = S.selDate ? fdate(S.selDate, 'l') : '';
+  let h = `<div class="datebar">
+    <span class="day">${esc(dayLabel.split(' ').slice(1, 3).join(' '))}</span>
+    <button class="btn small ghost" data-act="date-prev" ${di >= S.dates.length - 1 ? 'disabled' : ''} aria-label="Earlier Saturday">← Earlier</button>
+    <select id="dateSel" aria-label="Choose a race day">${S.dates.map(d => `<option value="${d}" ${d === S.selDate ? 'selected' : ''}>${esc(fdate(d, 'l'))}</option>`).join('')}</select>
+    <button class="btn small ghost" data-act="date-next" ${di <= 0 ? 'disabled' : ''} aria-label="Later Saturday">Later →</button>
+  </div>`;
+  h += `<div class="meets" role="group" aria-label="Meetings">` + meets.map(m => {
+    const rs = S.dayRaces.filter(r => r.slug === m.slug);
+    return `<button class="meet" data-act="meet" data-slug="${esc(m.slug)}" aria-pressed="${m.slug === S.selMeet}">
+      <span class="mt"><span class="trk">${esc(m.trk)}</span><span class="stt">${esc(m.st || '')}</span></span>
+      ${goingHTML(m.rt)}
+      <span class="rail">Rail ${esc(m.rail || '–')}${m.wx ? ' · ' + esc(m.wx) : ''}</span>
+      ${(m.rth || []).length > 1 ? `<span class="rth" title="Track rating changes today">${m.rth.slice(-3).map(x => esc(x[1]) + ' ' + esc(clock(x[0]))).join(' → ')}</span>` : ''}
+      <span class="foot">${stageChip(m.stage, rs)}<span>${rs.length || m.rc || 0} races</span></span>
+    </button>`;
+  }).join('') + `</div>`;
+  const races = S.dayRaces.filter(r => r.slug === S.selMeet).sort((a, b) => a.n - b.n);
+  const m = meets.find(x => x.slug === S.selMeet);
+  if (m) {
+    h += `<div class="section-h"><h2>${esc(m.trk)}</h2><span class="muted">${esc(fdate(S.selDate, 'l'))}</span><span class="aside"><a href="${esc(meetUrl(m))}" target="_blank" rel="noopener">racing.com ↗</a>${m.upd ? ' · updated ' + esc(ago(m.upd)) : ''}</span></div>`;
+    h += races.length ? `<div class="races">${races.map(raceRowHTML).join('')}</div>` : emptyHTML('Races not loaded yet', 'Fields appear here once the Saturday morning update has run.');
+    const meetIntel = S.intel.filter(i => i.slug === m.slug && i.date === S.selDate && !i.raceN);
+    if (meetIntel.length) h += `<div class="section-h"><h2>Meeting intel</h2></div><div class="feed">${meetIntel.map(intelItemHTML).join('')}</div>`;
+  }
+  v.innerHTML = h;
+}
+function raceRowHTML(r) {
+  const open = S.openRace === r.id;
+  const w = winnerOf(r);
+  const fs = fieldSize(r);
+  const placings = runnersOf(r).filter(x => x.p && x.p <= 3).sort((a, b) => a.p - b.p);
+  const st = r.start ? Date.parse(r.start) : null;
+  const res = isFinal(r)
+    ? `<b>${esc(w?.h || '')}</b> <span class="mono">${price(w?.sp)}</span><div class="sub">${placings.slice(1).map(x => esc(x.h)).join(' · ')}</div>`
+    : r.stage === 'abandoned' ? '<span class="chip lost">Abandoned</span>'
+    : r.stage === 'interim' ? '<span class="chip live">Interim result</span>'
+    : st && Date.now() > st ? '<span class="chip live">Result soon</span>'
+    : `<span class="chip field">${st && st - Date.now() < 12 * 3600e3 ? 'In ' + esc(until(st)) : /weights|nominations/i.test(r.stageText || '') ? esc(r.stageText) : 'Field'}</span>`;
+  const myPicks = S.picks.filter(p => p.raceId === r.id).length;
+  return `<div class="race" ${open ? 'open-race' : ''}>
+    <button class="rhead" data-act="race" data-id="${esc(r.id)}" aria-expanded="${open}">
+      <span class="rno">R${r.n}<small>${esc(r.tm || '')}</small></span>
+      <span style="min-width:0"><span class="rname">${esc(r.nm || 'Race ' + r.n)}</span>
+        <span class="rmeta"><span class="mono">${r.dist ? r.dist + 'm' : ''}</span>${r.cls ? `<span>${esc(r.cls)}</span>` : ''}<span>${fs} runners</span>${r.prize ? `<span class="mono">$${Number(r.prize).toLocaleString()}</span>` : ''}${myPicks ? `<span class="chip live">${myPicks} pick${myPicks > 1 ? 's' : ''}</span>` : ''}${(r.sf || []).map(f => `<span class="chip flag">${esc(f)}</span>`).join('')}</span></span>
+      <span class="rres">${res}</span>
+    </button>
+    ${open ? raceBodyHTML(r) : ''}
+  </div>`;
+}
+function raceBodyHTML(r) {
+  const fin = isFinal(r);
+  const rs = runnersOf(r).slice().sort((a, b) => fin ? ((a.p ?? 99) - (b.p ?? 99) || (a.no ?? 99) - (b.no ?? 99)) : (a.no ?? 99) - (b.no ?? 99));
+  const hasOdds = rs.some(x => x.od && x.od.w);
+  const hasBsp = rs.some(x => x.bsp);
+  const general = r.notes ? `<div class="item"><div class="ih"><span class="chip">Stewards</span></div><div class="it">${esc(r.notes)}</div></div>` : '';
+  const stw = r.stw ? `<span class="faint">Stewards’ report read ${esc(ago(r.stw.at))}</span>` : fin ? '<span class="faint">Stewards’ report not out yet</span>' : '';
+  const raceIntel = S.intel.filter(i => i.slug === r.slug && i.date === r.date && +i.raceN === +r.n);
+  let h = `<div class="rbody">
+    <div class="facts">${goingHTML(r.rt)}<span>Rail <b>${esc(r.rail || '–')}</b></span>${r.time ? `<span>Time <b class="mono">${esc(r.time)}</b>${r.vs ? ` <span class="faint mono" title="Against the standard time, in lengths">(${esc(r.vs)})</span>` : ''}</span>` : ''}${r.cls ? `<span>Class <b>${esc(r.cls)}</b></span>` : ''}<span>Distance <b class="mono">${r.dist || '–'}m</b></span><a href="${esc(raceUrl(r))}" target="_blank" rel="noopener noreferrer">${fin ? 'Result' : 'Form'} ↗</a> <a href="${esc(raceUrl(r))}/stewards-report" target="_blank" rel="noopener noreferrer">Stewards’ report ↗</a> ${stw}</div>
+    ${(r.sf || []).length ? `<div class="facts"><span class="label">Race</span>${r.sf.map(f => `<span class="chip flag">${esc(f)}</span>`).join('')}</div>` : ''}
+    ${r.cond ? `<div class="cond">${esc(r.cond)}</div>` : ''}
+    <div class="tbl-wrap"><table>
+      <thead><tr>${fin ? '<th>Pos</th>' : ''}<th>No.</th><th>Horse</th><th>Jockey / Trainer</th><th class="n">Wt</th>${fin ? '<th>800→400</th><th class="n">Margin</th><th class="n">SP</th>' : ''}${hasOdds ? `<th class="n">${fin ? 'Last fixed' : 'Fixed odds'}</th>` : ''}${hasBsp ? '<th class="n">BSP</th>' : ''}<th>Stewards flags</th><th></th></tr></thead>
+      <tbody>${rs.map(x => runnerRowHTML(r, x, fin, hasOdds, hasBsp)).join('')}</tbody>
+    </table></div>
+    ${general}
+    ${raceIntel.length ? `<div class="feed">${raceIntel.map(intelItemHTML).join('')}</div>` : ''}
+    <div class="formbar"><button class="btn small" data-act="intel-for-race" data-id="${esc(r.id)}">Add intel for this race</button></div>
+  </div>`;
+  return h;
+}
+function runnerRowHTML(r, x, fin, hasOdds, hasBsp) {
+  const k = hkey(x.h);
+  const open = S.openRunner === r.id + '|' + k;
+  const scr = isScr(x);
+  const cols = (fin ? 1 : 0) + 4 + (fin ? 3 : 0) + (hasOdds ? 1 : 0) + (hasBsp ? 1 : 0) + 2;
+  const picked = S.picks.some(p => p.raceId === r.id && (p.horseKey || hkey(p.horse)) === k);
+  let h = `<tr class="clickable${scr ? ' scr' : ''}${open ? ' expanded' : ''}" data-act="runner" data-id="${esc(r.id)}" data-k="${esc(k)}">
+    ${fin ? `<td><span class="pos${x.p === 1 ? ' p1' : ''}">${x.p ? x.p : `<span class="faint" style="font-size:12px">${esc(x.pt || '')}</span>`}</span></td>` : ''}
+    <td><span class="cloth">${esc(x.no ?? '–')}</span></td>
+    <td class="hc"><span class="hn">${esc(x.h)}</span>${x.b ? `<span class="bar">(${x.b})</span>` : ''}${x.fav && !fin ? ' <span class="chip fav">Fav</span>' : ''}${x.pt === 'EMG' ? ' <span class="chip">Emergency</span>' : ''}${picked ? ' <span class="chip live">Pick</span>' : ''}${formLine(x)}</td>
+    <td class="jt"><div>${esc(x.j || '–')}</div><div class="sub">${esc(x.tr || '')}</div></td>
+    <td class="n">${x.w ? x.w : '–'}</td>
+    ${fin ? `<td>${settleHTML(x.s)}</td><td class="n">${x.p === 1 ? '<span class="faint">Won</span>' : esc(x.m || '–')}</td><td class="n">${price(x.sp)}</td>` : ''}
+    ${hasOdds ? `<td class="n">${oddsHTML({ ...x, _date: r.date }, fin)}</td>` : ''}
+    ${hasBsp ? `<td class="n">${price(x.bsp)}</td>` : ''}
+    <td>${tagHTML(x.tg)}${x.nt ? `<div class="sub">${esc(x.nt)}</div>` : ''}</td>
+    <td>${scr ? '' : `<button class="btn small" data-act="log-pick" data-id="${esc(r.id)}" data-h="${esc(x.h)}">Log pick</button>`}</td>
+  </tr>`;
+  if (open) h += `<tr class="formrow"><td colspan="${cols}"><div class="form-in">${horseFormHTML(x.h, r.id)}</div></td></tr>`;
+  return h;
+}
+function clock(isoish, withDay) { const d = new Date(String(isoish).length <= 16 ? isoish + 'Z' : isoish); if (isNaN(d)) return ''; const t = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(' ', '').toLowerCase(); return withDay && iso(d) !== withDay ? d.toLocaleDateString([], { weekday: 'short' }) + ' ' + t : t; }
+function until(ms) { const m = Math.max(0, Math.round((ms - Date.now()) / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm'; }
+function formLine(x) {
+  const bits = [];
+  if (x.fm) bits.push(`<span class="mono">${esc(x.fm)}</span>`);
+  if (x.cr) bits.push(esc(x.cr));
+  if (x.rtg) bits.push('Rtg ' + esc(x.rtg));
+  if (x.gc) bits.push('Gear: ' + esc(x.gc));
+  if (x.ls) bits.push('<span class="lsx">Last ' + esc(x.ls) + '</span>');
+  return bits.length ? `<div class="sub">${bits.join(' · ')}</div>` : '';
+}
+function sparkHTML(oh, label) {
+  const pts = (oh || []).filter(p => p && p[1]);
+  if (pts.length < 3) return '';
+  const W = 64, H = 16, vs = pts.map(p => p[1]), lo = Math.min(...vs), hi = Math.max(...vs);
+  const X = i => 1 + i / (pts.length - 1) * (W - 2), Y = v => hi === lo ? H / 2 : 2 + (v - lo) / (hi - lo) * (H - 4);
+  const last = pts[pts.length - 1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(label)}"><title>${esc(label)}</title><polyline points="${pts.map((p, i) => X(i).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ')}"/><circle cx="${X(pts.length - 1).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="1.8"/></svg>`;
+}
+function oddsHTML(x, fin) {
+  if (!x.od || !x.od.w) return '–';
+  const o0 = x.od0 && x.od0.w, now = x.od.w;
+  const arrow = o0 && now < o0 - 1e-9 ? `<span class="firm" title="Firmed from ${esc(price(o0))}">▼</span>` : o0 && now > o0 + 1e-9 ? `<span class="drift" title="Drifted from ${esc(price(o0))}">▲</span>` : '';
+  const pts = (x.oh || []).filter(p => p && p[1]);
+  const label = pts.length ? 'Fixed odds: ' + pts.map(p => price(p[1]) + ' at ' + clock(p[0], x._date)).join(', ') : '';
+  const sub = [o0 && o0 !== now ? 'opened ' + price(o0) : '', x.od.p ? 'place ' + price(x.od.p) : '', !fin && x.od.at ? ago(x.od.at) : ''].filter(Boolean).join(' · ');
+  return `${price(now)}${arrow}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}${sparkHTML(x.oh, label)}`;
+}
+function horseRuns(name, excludeId) {
+  const k = hkey(name);
+  return allList().filter(r => r.id !== excludeId && runnersOf(r).some(y => hkey(y.h) === k))
+    .map(r => ({ r, x: runnersOf(r).find(y => hkey(y.h) === k) }))
+    .filter(o => o.x).sort((a, b) => b.r.date.localeCompare(a.r.date));
+}
+function horseFormHTML(name, excludeId) {
+  if (!S.allRaces) { loadAllRaces(); return '<span class="hint">Loading this horse’s runs from the database…</span>'; }
+  const runs = horseRuns(name, excludeId);
+  const intel = S.intel.filter(i => (i.hk || []).includes(hkey(name)));
+  if (!runs.length && !intel.length) return `<span class="hint">No other runs or intel for ${esc(name)} in the database yet. The database grows each Saturday.</span>`;
+  let h = `<div class="label">${esc(name)} · runs in the database</div>`;
+  if (runs.length) h += `<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Track</th><th class="n">Dist</th><th>Rating</th><th class="n">Pos</th><th class="n">Margin</th><th class="n">SP</th><th>Jockey</th><th>Flags</th></tr></thead><tbody>${runs.map(({ r, x }) => `<tr><td class="mono">${esc(fdate(r.date, 'm'))}</td><td>${esc(r.trk)} R${r.n}</td><td class="n">${r.dist || ''}</td><td>${goingHTML(r.rt)}</td><td class="n">${x.p ? x.p + '/' + fieldSize(r) : esc(x.pt || '')}</td><td class="n">${x.p === 1 ? 'Won' : esc(x.m || '–')}</td><td class="n">${price(x.sp)}</td><td>${esc(x.j || '')}</td><td>${tagHTML(x.tg)}</td></tr>`).join('')}</tbody></table></div>`;
+  if (intel.length) h += `<div class="feed">${intel.map(intelItemHTML).join('')}</div>`;
+  return h;
+}
+
+/* ---------- Picks ---------- */
+function renderPicks() {
+  const v = $('#view-picks');
+  if (!S.ready) { v.innerHTML = emptyHTML('Loading…', ''); return; }
+  const rows = gradedPicks();
+  const st = stats(rows);
+  const cal = calibration(rows);
+  const pending = rows.filter(x => x.g.status === 'pending').length;
+  let h = `<details class="panel" id="pickPanel" ${S.pickPrefill || !S.picks.length ? 'open' : ''}><summary>Log a pick</summary><div class="pin">${pickFormHTML()}</div></details>`;
+  if (!S.picks.length) {
+    h += emptyHTML('No picks logged yet', 'Log your selection before the race: your rated price, the odds you took and the stake. Results grade it automatically, including CLV against the starting price.');
+    v.innerHTML = h; bindPickForm(); return;
+  }
+  const profitCls = st.profit > 0 ? 'pos' : st.profit < 0 ? 'neg' : '';
+  h += `<div class="tiles">
+    <div class="tile"><span class="label">Settled bets</span><span class="v">${st.n}</span><span class="s">${pending} pending</span></div>
+    <div class="tile"><span class="label">Hit rate</span><span class="v">${pct(st.n ? st.hits / st.n : null, 0)}</span><span class="s">${st.hits} returned a profit</span></div>
+    <div class="tile"><span class="label">Profit</span><span class="v ${profitCls}">${money(st.profit, true)}</span><span class="s">on ${money(st.outlay)} outlaid</span></div>
+    <div class="tile"><span class="label">ROI</span><span class="v ${profitCls}">${spct(st.roi)}</span><span class="s">avg odds ${price(st.avgOdds)}</span></div>
+    <div class="tile"><span class="label">CLV vs SP</span><span class="v ${st.clv > 0 ? 'pos' : st.clv < 0 ? 'neg' : ''}">${spct(st.clv)}</span><span class="s">${st.clvN} bets with a closing price</span></div>
+    <div class="tile"><span class="label">Your prices A/E</span><span class="v">${cal.ae != null ? cal.ae.toFixed(2) : '–'}</span><span class="s">${cal.n} rated picks · 1.00 is perfectly calibrated</span></div>
+  </div>`;
+  h += `<div class="grid2">
+    <div class="card"><div class="section-h"><h2 style="font-size:18px">Running profit</h2><span class="aside">by race, oldest first</span></div>${pnlChartHTML(rows.filter(isSettled))}</div>
+    <div class="card"><div class="section-h"><h2 style="font-size:18px">Price calibration</h2><span class="aside">${cal.n} rated picks</span></div>${calibHTML(cal)}</div>
+  </div>`;
+  const dims = { trk: ['Track', x => x.pk.trk || '–'], cond: ['Condition', x => going(x.race?.rt).band || '–'], dist: ['Distance', x => distBand(x.race?.dist)], bt: ['Bet type', x => x.pk.betType || 'Win'], ob: ['Odds taken', x => oddsBand(num(x.pk.odds))] };
+  const groups = {};
+  rows.forEach(x => { const k = dims[S.splitBy][1](x); (groups[k] = groups[k] || []).push(x); });
+  h += `<div class="section-h"><h2>Splits</h2><span class="seg" role="group" aria-label="Split by">${Object.entries(dims).map(([k, [l]]) => `<button data-act="split" data-k="${k}" aria-pressed="${S.splitBy === k}">${l}</button>`).join('')}</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>${dims[S.splitBy][0]}</th><th class="n">Bets</th><th class="n">Hit rate</th><th class="n">Profit</th><th class="n">ROI</th><th class="n">CLV</th></tr></thead><tbody>${Object.entries(groups).sort((a, b) => b[1].length - a[1].length).map(([k, xs]) => { const s = stats(xs); return `<tr><td>${esc(k)}</td><td class="n">${s.n}</td><td class="n">${pct(s.n ? s.hits / s.n : null, 0)}</td><td class="n">${money(s.profit, true)}</td><td class="n">${spct(s.roi)}</td><td class="n">${spct(s.clv)}</td></tr>`; }).join('')}</tbody></table></div>`;
+  h += `<div class="section-h"><h2>All picks</h2><span class="aside">${rows.length} logged</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Race</th><th>Horse</th><th>Bet</th><th class="n">Rated</th><th class="n">Taken</th><th class="n">Stake</th><th class="n">SP</th><th>Result</th><th class="n">P&amp;L</th><th class="n">CLV</th><th></th></tr></thead><tbody>${rows.slice().reverse().map(pickRowHTML).join('')}</tbody></table></div>`;
+  v.innerHTML = h; bindPickForm();
+}
+function pickRowHTML(x) {
+  const { pk, g } = x;
+  const res = g.status === 'pending' ? '<span class="chip pending">Pending</span>' : g.status === 'void' ? '<span class="chip void">Scratched</span>' : g.status === 'unmatched' ? '<span class="chip unmatched">Check name</span>' : `<span class="chip ${g.profit > 0 ? 'won' : 'lost'}">${g.pos ? 'Finished ' + g.pos : esc(g.runner?.pt || '')}</span>`;
+  return `<tr><td><div class="mono">${esc(fdate(pk.date, 'm'))}</div><div class="sub">${esc(pk.trk || '')} R${esc(pk.raceN || '')}</div></td><td><span class="hn">${esc(pk.horse)}</span>${pk.notes ? `<div class="sub">${esc(pk.notes)}</div>` : ''}</td><td>${esc(pk.betType || 'Win')}<div class="sub">${esc(pk.bookie || '')}</div></td><td class="n">${price(num(pk.rated))}</td><td class="n">${price(num(pk.odds))}</td><td class="n">${money(num(pk.stake))}</td><td class="n">${price(g.closing)}</td><td>${res}${g.note ? `<div class="sub">${esc(g.note)}</div>` : ''}</td><td class="n">${g.profit == null ? '–' : money(g.profit, true)}</td><td class="n">${spct(g.clv)}</td><td><span data-del-wrap="${esc(pk.id)}"><button class="btn small ghost" data-act="del-pick" data-id="${esc(pk.id)}" aria-label="Delete pick">Delete</button></span></td></tr>`;
+}
+function pickFormHTML() {
+  const pf = S.pickPrefill || {};
+  const date = pf.date || S.selDate || S.dates[0] || iso();
+  return `<form id="pickForm" class="fgrid" autocomplete="off">
+    <div class="field"><label for="pf-date">Race day</label><select id="pf-date">${(S.dates.length ? S.dates : [date]).map(d => `<option value="${d}" ${d === date ? 'selected' : ''}>${esc(fdate(d, 'l'))}</option>`).join('')}</select></div>
+    <div class="field"><label for="pf-meet">Meeting</label><select id="pf-meet"></select></div>
+    <div class="field"><label for="pf-race">Race</label><select id="pf-race"></select></div>
+    <div class="field"><label for="pf-horse">Horse</label><input id="pf-horse" list="pf-horses" required placeholder="Start typing"><datalist id="pf-horses"></datalist></div>
+    <div class="field"><label for="pf-bt">Bet type</label><select id="pf-bt">${['Win', 'Place', 'Each way', 'Lay'].map(b => `<option>${b}</option>`).join('')}</select></div>
+    <div class="field"><label for="pf-rated">Your price ($)</label><input id="pf-rated" type="number" step="0.01" min="1.01" placeholder="e.g. 4.50"></div>
+    <div class="field"><label for="pf-odds">Odds taken ($)</label><input id="pf-odds" type="number" step="0.01" min="1.01" required placeholder="e.g. 5.00"></div>
+    <div class="field"><label for="pf-place">Place odds ($)</label><input id="pf-place" type="number" step="0.01" min="1.01" placeholder="Optional; tote place used if blank"></div>
+    <div class="field"><label for="pf-stake">Stake ($)</label><input id="pf-stake" type="number" step="0.5" min="0" value="${esc(S.settings.stake || 10)}"></div>
+    <div class="field"><label for="pf-bookie">Bookie</label><input id="pf-bookie" list="pf-bookies" placeholder="e.g. Sportsbet"><datalist id="pf-bookies">${['Betfair', 'Sportsbet', 'TAB', 'Ladbrokes', 'Neds', 'Bet365', 'PointsBet', 'Unibet', 'Dabble', 'Betr'].map(b => `<option value="${b}">`).join('')}</datalist></div>
+    <div class="field wide"><label for="pf-notes">Why (optional)</label><input id="pf-notes" placeholder="e.g. Drawn to lead, track playing on pace"></div>
+    <div class="formbar field wide"><button class="btn primary" type="submit">Save pick</button><span class="hint" id="pf-hint">Lay stake is the backer’s stake; each way stake is per leg. Betfair bets use your commission setting.</span></div>
+  </form>`;
+}
+async function racesForDate(date) {
+  if (date === S.selDate && S.dayRaces.length) return S.dayRaces;
+  if (S.allRaces) { const xs = allList().filter(r => r.date === date); if (xs.length) return xs; }
+  return [];
+}
+function bindPickForm() {
+  const f = $('#pickForm'); if (!f) return;
+  const pf = S.pickPrefill || {};
+  let races = [];
+  const fillMeets = async () => {
+    const date = $('#pf-date').value;
+    races = await racesForDate(date);
+    const meets = meetingsFor(date);
+    $('#pf-meet').innerHTML = meets.map(m => `<option value="${esc(m.slug)}">${esc(m.trk)}</option>`).join('') || '<option value="">No meetings</option>';
+    if (pf.slug) $('#pf-meet').value = pf.slug;
+    fillRaces();
+  };
+  const fillRaces = () => {
+    const slug = $('#pf-meet').value;
+    const rs = races.filter(r => r.slug === slug).sort((a, b) => a.n - b.n);
+    $('#pf-race').innerHTML = rs.map(r => `<option value="${esc(r.id)}">R${r.n} ${esc(r.tm || '')} · ${esc(r.nm || '')}</option>`).join('') || '<option value="">No races loaded</option>';
+    if (pf.raceId) $('#pf-race').value = pf.raceId;
+    fillHorses();
+  };
+  const fillHorses = () => {
+    const r = races.find(x => x.id === $('#pf-race').value);
+    $('#pf-horses').innerHTML = runnersOf(r).filter(x => !isScr(x)).map(x => `<option value="${esc(x.h)}">${esc(x.no + '. ' + x.h)}${x.od && x.od.w ? ' ' + price(x.od.w) : ''}</option>`).join('');
+    if (pf.horse) { $('#pf-horse').value = pf.horse; const ru = runnersOf(r).find(x => x.h === pf.horse); if (ru && ru.od && ru.od.w && !$('#pf-odds').value) $('#pf-odds').value = ru.od.w; }
+  };
+  $('#pf-date').onchange = () => { pf.slug = pf.raceId = pf.horse = null; fillMeets(); };
+  $('#pf-meet').onchange = () => { pf.raceId = pf.horse = null; fillRaces(); };
+  $('#pf-race').onchange = () => { pf.horse = null; fillHorses(); };
+  fillMeets();
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const raceIdV = $('#pf-race').value; const r = races.find(x => x.id === raceIdV);
+    const horse = $('#pf-horse').value.trim();
+    if (!r) return toast('Choose a race first.');
+    if (!horse) return toast('Enter the horse you picked.');
+    const ru = runnersOf(r).find(x => hkey(x.h) === hkey(horse));
+    const doc = {
+      createdAt: new Date().toISOString(), date: r.date, raceId: r.id, mid: r.mid || (r.date + '_' + r.slug), trk: r.trk, slug: r.slug, raceN: r.n,
+      horse: ru ? ru.h : horse, horseKey: hkey(ru ? ru.h : horse), betType: $('#pf-bt').value,
+      rated: num($('#pf-rated').value), odds: num($('#pf-odds').value), placeOdds: num($('#pf-place').value), stake: num($('#pf-stake').value),
+      bookie: $('#pf-bookie').value.trim(), notes: $('#pf-notes').value.trim(), mkt: ru && ru.od ? { w: ru.od.w || null, at: ru.od.at || null } : null
+    };
+    if (!doc.odds) return toast('Enter the odds you took.');
+    const btn = f.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Saving…';
+    const keep = S.pickPrefill; S.pickPrefill = null;
+    try { await addPick(doc); toast('Pick saved: ' + doc.horse + ' (' + doc.betType + ' at ' + price(doc.odds) + ').'); }
+    catch (err) { S.pickPrefill = keep; toast(writeErr(err), 8000); btn.disabled = false; btn.textContent = 'Save pick'; }
+  };
+}
+function pnlChartHTML(rows) {
+  if (rows.length < 2) return '<p class="hint">The chart appears once two bets have settled.</p>';
+  let cum = 0; const pts = rows.map((x, i) => { cum += x.g.profit; return { i, y: cum, x }; });
+  const W = 640, H = 220, L = 54, R = 14, T = 14, B = 26;
+  const ys = pts.map(p => p.y).concat(0); let lo = Math.min(...ys), hi = Math.max(...ys);
+  const span = hi - lo || 1; const step = niceStep(span / 4);
+  lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+  const X = i => L + (pts.length === 1 ? 0 : i / (pts.length - 1)) * (W - L - R);
+  const Y = v => T + (hi - v) / (hi - lo || 1) * (H - T - B);
+  let grid = '';
+  for (let v = lo; v <= hi + 1e-9; v += step) grid += `<line class="gridl" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v < 0 ? '−' : ''}$${Math.abs(v).toFixed(step < 1 ? 2 : 0)}</text>`;
+  const d = pts.map((p, i) => (i ? 'L' : 'M') + X(p.i).toFixed(1) + ' ' + Y(p.y).toFixed(1)).join(' ');
+  const area = d + ` L${X(pts[pts.length - 1].i).toFixed(1)} ${Y(0).toFixed(1)} L${X(0).toFixed(1)} ${Y(0).toFixed(1)} Z`;
+  const last = pts[pts.length - 1];
+  const xl = `<text x="${L}" y="${H - 6}">${esc(fdate(pts[0].x.pk.date, 'm'))}</text><text x="${W - R}" y="${H - 6}" text-anchor="end">${esc(fdate(last.x.pk.date, 'm'))}</text>`;
+  const data = esc(JSON.stringify(pts.map(p => [X(p.i), Y(p.y), money(p.y, true), (p.x.pk.horse || '') + ' · ' + fdate(p.x.pk.date) + ' ' + (p.x.pk.trk || '') + ' R' + p.x.pk.raceN + ' · ' + money(p.x.g.profit, true)])));
+  return `<div class="chartbox" data-pnl="${data}"><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Running profit after ${pts.length} settled bets: ${money(last.y, true)}">
+    ${grid}<line class="zero" x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}"/>
+    <path class="ar" d="${area}"/><path class="ln" d="${d}"/>
+    <circle class="pt" cx="${X(last.i)}" cy="${Y(last.y)}" r="4.5"/>
+    <line class="hov" x1="0" x2="0" y1="${T}" y2="${H - B}" visibility="hidden"/>
+    ${xl}</svg><div class="tip"></div></div>`;
+}
+function niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(Math.max(x, 1e-9)))); const f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
+function calibHTML(cal) {
+  if (!cal.n) return '<p class="hint">Add your rated price when you log picks. Once races settle, this compares your prices with how often those horses actually won.</p>';
+  const max = Math.max(.6, ...cal.buckets.map(b => Math.max(b.exp || 0, b.act || 0)));
+  const rows = cal.buckets.filter(b => b.n).map(b => `<div class="cal-row"><span>${esc(b.l)}<div class="sub">${b.n} pick${b.n > 1 ? 's' : ''}</div></span>
+    <div class="cal-track" title="Your prices implied ${pct(b.exp, 0)}; actually won ${pct(b.act, 0)}"><div class="cal-bar" style="width:${(b.act / max * 100).toFixed(1)}%"></div><div class="cal-exp" style="left:calc(${(b.exp / max * 100).toFixed(1)}% - 1px)"></div></div>
+    <span class="mono" style="font-size:12px">${pct(b.act, 0)} <span class="faint">vs ${pct(b.exp, 0)}</span></span></div>`).join('');
+  const vs = cal.mN ? `<p class="hint">Brier score on ${cal.mN} rated picks: yours ${cal.ybrier.toFixed(3)} vs the SP market ${cal.mbrier.toFixed(3)} (lower is sharper).</p>` : '';
+  return `<div class="calib"><div class="legend"><span><i class="sw"></i>Actually won</span><span><i class="sw tick"></i>Your price implied</span></div>${rows}${vs}</div>`;
+}
+
+/* ---------- Intel ---------- */
+const INTEL_TYPES = { trainer: 'Trainer', jockey: 'Jockey', track: 'Track', stewards: 'Stewards', news: 'News', social: 'Social', note: 'My note' };
+function intelItemHTML(i) {
+  const race = i.raceN ? ' R' + esc(i.raceN) : '';
+  const mine = i.by === 'me' || !i.by;
+  return `<div class="item"><div class="ih"><span class="chip">${esc(INTEL_TYPES[i.type] || i.type || 'Note')}</span><span class="mono">${esc(fdate(i.date, 'm'))}</span>${i.trk ? `<span>${esc(i.trk)}${race}</span>` : ''}${i.src ? `<span class="faint">${esc(i.src)}</span>` : ''}<span class="ia">${safeUrl(i.url) ? `<a href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener noreferrer">${i.by === 'auto' ? 'Read ↗' : 'Source ↗'}</a>` : ''}${i.id ? `<span data-del-wrap="${esc(i.id)}"><button class="btn small ghost" data-act="del-intel" data-id="${esc(i.id)}"${i.by === 'auto' ? ' data-auto="1"' : ''}>${i.by === 'auto' ? 'Hide' : 'Delete'}</button></span>` : ''}</span></div>
+    <div class="it">${esc(i.text)}</div>${(i.horses || []).length ? `<div>${i.horses.map(hh => `<button class="tag" data-act="lookup-horse" data-h="${esc(hh)}" style="border:0;cursor:pointer">${esc(hh)}</button>`).join('')}</div>` : ''}${!mine ? '' : ''}</div>`;
+}
+function renderIntel() {
+  const v = $('#view-intel');
+  if (!S.ready) { v.innerHTML = emptyHTML('Loading…', ''); return; }
+  const pre = S.intelPrefill || {};
+  const tracks = [...new Set(S.meetings.map(m => m.trk))].sort();
+  let h = `<details class="panel" ${pre.slug || !S.intel.length ? 'open' : ''}><summary>Add intel</summary><div class="pin">
+    <form id="intelForm" class="fgrid" autocomplete="off">
+      <div class="field wide"><label for="if-text">What was said or seen</label><textarea id="if-text" required placeholder="Paste an Instagram or Facebook post, a trainer quote, a track report…"></textarea></div>
+      <div class="field"><label for="if-type">Type</label><select id="if-type">${Object.entries(INTEL_TYPES).map(([k, l]) => `<option value="${k}" ${k === (pre.type || 'social') ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div class="field"><label for="if-date">Race day it relates to</label><input id="if-date" type="date" value="${esc(pre.date || S.selDate || iso())}"></div>
+      <div class="field"><label for="if-meet">Track</label><select id="if-meet"><option value="">Any</option>${tracks.map(t => `<option ${t === pre.trk ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
+      <div class="field"><label for="if-race">Race no.</label><input id="if-race" type="number" min="1" max="12" value="${esc(pre.raceN || '')}"></div>
+      <div class="field wide"><label for="if-horses">Horses mentioned (comma separated)</label><input id="if-horses" list="if-hlist" placeholder="e.g. Kingswood, Saint George"><datalist id="if-hlist">${horseNames().slice(0, 1500).map(n => `<option value="${esc(n)}">`).join('')}</datalist></div>
+      <div class="field"><label for="if-src">Source</label><input id="if-src" placeholder="e.g. @trainer on Instagram"></div>
+      <div class="field"><label for="if-url">Link</label><input id="if-url" type="url" placeholder="https://"></div>
+      <div class="formbar field wide"><button class="btn primary" type="submit">Save intel</button><span class="hint">Tagged horses show up in their form history and in Lookup.</span></div>
+    </form></div></details>`;
+  const q = S.intelQ.toLowerCase();
+  const list = S.intel.filter(i => (S.intelFilter === 'all' || i.type === S.intelFilter) && (!S.intelTrack || i.trk === S.intelTrack) && (!q || (i.text + ' ' + (i.horses || []).join(' ') + ' ' + (i.src || '')).toLowerCase().includes(q)));
+  h += `<div class="section-h"><h2>Intel feed</h2><span class="aside">${list.length} of ${S.intel.length}</span></div>
+  <div class="filters"><button class="fchip" data-act="ifilter" data-k="all" aria-pressed="${S.intelFilter === 'all'}">All</button>${Object.entries(INTEL_TYPES).map(([k, l]) => `<button class="fchip" data-act="ifilter" data-k="${k}" aria-pressed="${S.intelFilter === k}">${l}</button>`).join('')}
+    <select id="itrack" aria-label="Filter by track" style="border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 10px;font-size:12px"><option value="">All tracks</option>${tracks.map(t => `<option ${t === S.intelTrack ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>
+    <input id="iq" type="search" placeholder="Search intel" value="${esc(S.intelQ)}" style="border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:12px;min-width:0;flex:1 1 140px"></div>`;
+  h += list.length ? `<div class="feed">${list.map(intelItemHTML).join('')}</div>` : emptyHTML('Nothing here yet', 'Scheduled updates add track reports, trainer and jockey quotes and stewards’ notes. Paste social posts above.');
+  v.innerHTML = h;
+  const f = $('#intelForm');
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const text = $('#if-text').value.trim(); if (!text) return;
+    const trk = $('#if-meet').value; const m = S.meetings.find(x => x.trk === trk);
+    const horses = $('#if-horses').value.split(',').map(s => s.trim()).filter(Boolean);
+    const doc = { createdAt: new Date().toISOString(), date: $('#if-date').value || iso(), type: $('#if-type').value, text, src: $('#if-src').value.trim(), url: $('#if-url').value.trim(), trk: trk || '', slug: m ? m.slug : '', raceN: num($('#if-race').value), horses, hk: horses.map(hkey), by: 'me' };
+    const btn = f.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Saving…';
+    const keep = S.intelPrefill; S.intelPrefill = null;
+    try { await addIntel(doc); toast('Intel saved.'); }
+    catch (err) { S.intelPrefill = keep; toast(writeErr(err), 8000); btn.disabled = false; btn.textContent = 'Save intel'; }
+  };
+  $('#itrack').onchange = e => { S.intelTrack = e.target.value; renderIntel(); };
+  const iq = $('#iq'); iq.oninput = e => { S.intelQ = e.target.value; clearTimeout(iq._t); iq._t = setTimeout(() => { renderIntel(); const n = $('#iq'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 250); };
+}
+function horseNames() {
+  const set = new Set();
+  allList().concat(S.dayRaces).forEach(r => runnersOf(r).forEach(x => set.add(x.h)));
+  return [...set].sort();
+}
+
+/* ---------- Lookup ---------- */
+function renderLookup() {
+  const v = $('#view-lookup');
+  if (!S.ready) { v.innerHTML = emptyHTML('Loading…', ''); return; }
+  const L = S.lookup;
+  const kinds = { horse: 'Horse', jockey: 'Jockey', trainer: 'Trainer', track: 'Track' };
+  const names = lookupNames(L.kind);
+  let h = `<div class="section-h"><h2>Lookup</h2><span class="aside">${S.allRaces ? S.allRaces.size + ' races in the database' : 'Loading the database…'}</span></div>
+    <div class="filters"><span class="seg" role="group" aria-label="Look up by">${Object.entries(kinds).map(([k, l]) => `<button data-act="lkind" data-k="${k}" aria-pressed="${L.kind === k}">${l}</button>`).join('')}</span>
+    <input id="lq" list="lnames" type="search" value="${esc(L.q)}" placeholder="Type a ${kinds[L.kind].toLowerCase()} name" style="border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:7px 10px;min-width:0;flex:1 1 220px"><datalist id="lnames">${names.slice(0, 2000).map(n => `<option value="${esc(n)}">`).join('')}</datalist></div>`;
+  if (!S.allRaces) { v.innerHTML = h + '<p class="hint">Loading…</p>'; bindLookup(); return; }
+  if (!L.q) { v.innerHTML = h + emptyHTML('Search the database', 'Pick a horse, jockey, trainer or track to see every run on file, its record by track condition and distance, and any intel.'); bindLookup(); return; }
+  h += lookupResultHTML(L.kind, L.q);
+  v.innerHTML = h; bindLookup();
+}
+function bindLookup() {
+  const q = $('#lq'); if (!q) return;
+  q.onchange = e => { S.lookup.q = e.target.value.trim(); ls.set('lookup', S.lookup); renderLookup(); };
+  q.onkeydown = e => { if (e.key === 'Enter') { S.lookup.q = e.target.value.trim(); ls.set('lookup', S.lookup); renderLookup(); } };
+}
+function lookupNames(kind) {
+  const set = new Set();
+  allList().forEach(r => { if (kind === 'track') set.add(r.trk); else runnersOf(r).forEach(x => { const v = kind === 'horse' ? x.h : kind === 'jockey' ? x.j : x.tr; if (v && v !== 'TBC') set.add(kind === 'jockey' ? String(v).replace(/\s*\(a[\d.]+\)\s*/, '') : v); }); });
+  return [...set].sort();
+}
+function recordLine(runs) {
+  const st = runs.filter(o => !isScr(o.x));
+  const w = st.filter(o => o.x.p === 1).length, pl = st.filter(o => o.x.p && o.x.p <= 3).length;
+  const exp = st.reduce((a, o) => a + (num(o.x.sp) ? 1 / o.x.sp : 0), 0);
+  return { starts: st.length, wins: w, places: pl, wr: st.length ? w / st.length : null, pr: st.length ? pl / st.length : null, ae: exp ? w / exp : null };
+}
+function splitTable(title, runs, keyFn) {
+  const g = {}; runs.forEach(o => { const k = keyFn(o); (g[k] = g[k] || []).push(o); });
+  return `<div class="card" style="padding:0"><div style="padding:10px 12px 0" class="label">${esc(title)}</div><div class="tbl-wrap" style="border:0"><table><thead><tr><th></th><th class="n">Starts</th><th class="n">W</th><th class="n">Pl</th><th class="n">Win %</th><th class="n">A/E</th></tr></thead><tbody>${Object.entries(g).sort((a, b) => b[1].length - a[1].length).map(([k, xs]) => { const r = recordLine(xs); return `<tr><td>${esc(k)}</td><td class="n">${r.starts}</td><td class="n">${r.wins}</td><td class="n">${r.places}</td><td class="n">${pct(r.wr, 0)}</td><td class="n">${r.ae != null ? r.ae.toFixed(2) : '–'}</td></tr>`; }).join('')}</tbody></table></div></div>`;
+}
+function lookupResultHTML(kind, q) {
+  const qk = kind === 'horse' ? hkey(q) : kind === 'jockey' ? pkey(q) : q.toLowerCase().trim();
+  let runs = [];
+  allList().forEach(r => {
+    if (kind === 'track') { if (r.trk.toLowerCase() === qk) runnersOf(r).forEach(x => runs.push({ r, x })); return; }
+    runnersOf(r).forEach(x => {
+      const v = kind === 'horse' ? hkey(x.h) : kind === 'jockey' ? pkey(x.j) : String(x.tr || '').toLowerCase().trim();
+      if (v === qk) runs.push({ r, x });
+    });
+  });
+  runs.sort((a, b) => b.r.date.localeCompare(a.r.date) || a.r.n - b.r.n);
+  if (!runs.length) return emptyHTML('No runs found for “' + q + '”', 'Check the spelling, or pick a name from the list as you type.');
+  if (kind === 'track') return trackLookupHTML(q, runs);
+  const rec = recordLine(runs);
+  const intel = kind === 'horse' ? S.intel.filter(i => (i.hk || []).includes(qk)) : S.intel.filter(i => (i.text || '').toLowerCase().includes(q.toLowerCase()));
+  let h = `<div class="tiles"><div class="tile"><span class="label">${esc(kind)}</span><span class="v" style="font-size:24px">${esc(runs[0].x[kind === 'horse' ? 'h' : kind === 'jockey' ? 'j' : 'tr'] || q)}</span><span class="s">${runs.length} run${runs.length > 1 ? 's' : ''} on file</span></div>
+    <div class="tile"><span class="label">Record</span><span class="v">${rec.wins}-${rec.places - rec.wins}</span><span class="s">${rec.starts} starts · wins-other places</span></div>
+    <div class="tile"><span class="label">Win %</span><span class="v">${pct(rec.wr, 0)}</span><span class="s">place ${pct(rec.pr, 0)}</span></div>
+    <div class="tile"><span class="label">A/E vs SP</span><span class="v">${rec.ae != null ? rec.ae.toFixed(2) : '–'}</span><span class="s">above 1.00 means it beats its starting prices</span></div></div>`;
+  h += `<div class="grid2">${splitTable('By track condition', runs, o => going(o.r.rt).band || '–')}${splitTable('By distance', runs, o => distBand(o.r.dist))}</div>`;
+  if (kind !== 'horse') h += `<div class="grid2">${splitTable('By track', runs, o => o.r.trk)}${splitTable(kind === 'jockey' ? 'By trainer' : 'By jockey', runs, o => (kind === 'jockey' ? o.x.tr : String(o.x.j || '').replace(/\s*\(a[\d.]+\)\s*/, '')) || '–')}</div>`;
+  h += `<div class="section-h"><h2>Runs</h2></div><div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Race</th><th class="n">Dist</th><th>Rating</th>${kind !== 'horse' ? '<th>Horse</th>' : ''}<th class="n">Pos</th><th class="n">Margin</th><th>800→400</th><th class="n">SP</th><th>${kind === 'jockey' ? 'Trainer' : 'Jockey'}</th><th>Flags</th></tr></thead><tbody>${runs.slice(0, 400).map(({ r, x }) => `<tr><td class="mono">${esc(fdate(r.date, 'm'))}</td><td>${esc(r.trk)} R${r.n}<div class="sub">${esc(r.cls || '')}</div></td><td class="n">${r.dist || ''}</td><td>${goingHTML(r.rt)}</td>${kind !== 'horse' ? `<td><button class="tag" style="border:0;cursor:pointer" data-act="lookup-horse" data-h="${esc(x.h)}">${esc(x.h)}</button></td>` : ''}<td class="n">${x.p ? x.p + '/' + fieldSize(r) : esc(x.pt || '')}</td><td class="n">${x.p === 1 ? 'Won' : esc(x.m || '–')}</td><td>${settleHTML(x.s)}</td><td class="n">${price(x.sp)}</td><td>${esc(kind === 'jockey' ? (x.tr || '') : (x.j || ''))}</td><td>${tagHTML(x.tg)}</td></tr>`).join('')}</tbody></table></div>`;
+  if (intel.length) h += `<div class="section-h"><h2>Intel</h2></div><div class="feed">${intel.map(intelItemHTML).join('')}</div>`;
+  return h;
+}
+function trackLookupHTML(q, runs) {
+  const races = [...new Map(runs.map(o => [o.r.id, o.r])).values()].filter(isFinal);
+  const winners = races.map(r => ({ r, w: winnerOf(r) })).filter(o => o.w);
+  const lead = winners.filter(o => /^\d+/.test(o.w.s || '') && +String(o.w.s).split('/')[1].replace(/\D/g, '') <= 2).length;
+  const settled400 = winners.filter(o => o.w.s && /\//.test(o.w.s));
+  const barrierBand = b => !b ? '–' : b <= 4 ? 'Barriers 1–4' : b <= 8 ? 'Barriers 5–8' : 'Barriers 9+';
+  const fav = races.filter(r => { const rs = runnersOf(r).filter(x => !isScr(x) && num(x.sp)); if (!rs.length) return false; const f = rs.reduce((a, b) => (b.sp < a.sp ? b : a)); return f.p === 1; }).length;
+  const days = [...new Map(races.map(r => [r.date, r])).values()].sort((a, b) => b.date.localeCompare(a.date));
+  let h = `<div class="tiles"><div class="tile"><span class="label">Track</span><span class="v" style="font-size:24px">${esc(q)}</span><span class="s">${races.length} races · ${days.length} meetings</span></div>
+    <div class="tile"><span class="label">Winners 1st or 2nd at the 400m</span><span class="v">${pct(settled400.length ? lead / settled400.length : null, 0)}</span><span class="s">on-pace bias indicator</span></div>
+    <div class="tile"><span class="label">Favourites won</span><span class="v">${pct(races.length ? fav / races.length : null, 0)}</span><span class="s">by SP</span></div></div>`;
+  h += `<div class="grid2">${splitTable('Barrier draw (all runners)', runs.filter(o => !isScr(o.x)), o => barrierBand(o.x.b))}${splitTable('Track condition', runs.filter(o => !isScr(o.x) && o.x.p === 1), o => going(o.r.rt).band || '–').replace('Starts', 'Wins')}</div>`;
+  h += `<div class="section-h"><h2>Meetings</h2></div><div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Rating</th><th>Rail</th><th class="n">Races</th><th>Winners settled in top 2 at 400m</th></tr></thead><tbody>${days.map(d => { const rs = races.filter(r => r.date === d.date); const ws = rs.map(winnerOf).filter(Boolean); const on = ws.filter(w => w.s && +String(w.s).split('/')[1].replace(/\D/g, '') <= 2).length; return `<tr><td class="mono">${esc(fdate(d.date, 'm'))}</td><td>${goingHTML(d.rt)}</td><td>${esc(d.rail || '')}</td><td class="n">${rs.length}</td><td>${on} of ${ws.length}</td></tr>`; }).join('')}</tbody></table></div>`;
+  return h;
+}
+
+/* ---------- Data ---------- */
+function renderData() {
+  const v = $('#view-data');
+  if (!S.ready) { v.innerHTML = emptyHTML('Loading…', ''); return; }
+  const cov = S.dates.map(d => { const ms = meetingsFor(d); const rs = allList().filter(r => r.date === d); return { d, ms, rs }; });
+  const runs = (S.status?.runs || []).slice().reverse().slice(0, 30);
+  const bf = S.status?.backfill;
+  const fc = S.status?.firecrawl;
+  const sched = [
+    ['Saturday', 'Every 15 min, 7am to midnight: scratchings, odds every ~12 min for races within 3 h, results ~8 min after each start, stewards from 25 min after'],
+    ['Wed to Fri', 'About 8:30am, 12:30pm, 4:30pm and 8:30pm: the coming Saturday’s meetings, fields, barriers, ratings and early odds'],
+    ['Sun to Tue', 'About 9:30am and 6:30pm: late results, stewards’ reports, news, and the backfill of past Saturdays'],
+    ['Any time', 'Update now (top right), or Actions → Racebook update → Run workflow on GitHub']
+  ];
+  let h = `<div class="section-h"><h2>Coverage</h2><span class="aside">${S.allRaces ? S.allRaces.size + ' races' : ''} · ${S.dates.length} race days${bf && bf.pending && bf.pending.length ? ' · backfill: ' + bf.pending.length + ' Saturdays to go' : ''}</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Race day</th><th>Meetings</th><th class="n">Races</th><th class="n">Final</th><th class="n">Stewards</th></tr></thead><tbody>${cov.map(c => `<tr><td class="mono">${esc(fdate(c.d, 'l'))}</td><td>${c.ms.map(m => esc(m.trk)).join(', ')}</td><td class="n">${c.rs.length}</td><td class="n">${c.rs.filter(isFinal).length}</td><td class="n">${c.rs.filter(r => r.stw).length}</td></tr>`).join('') || '<tr><td colspan="5" class="faint">Nothing loaded yet</td></tr>'}</tbody></table></div>`;
+  h += `<div class="grid2"><div class="card"><div class="label" style="margin-bottom:8px">Update schedule (Sydney time)</div><dl class="kv">${sched.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</dl><p class="hint">Runs on GitHub, so your computer can be off. Scheduled runs can start a few minutes late on busy days.${fc ? ` Firecrawl backup: ${esc(fc.used || 0)} credits used in ${esc(fc.month || '')}.` : ''}</p></div>
+    <div class="card"><div class="label" style="margin-bottom:8px">Recent updates</div>${runs.length ? `<dl class="kv">${runs.map(r => `<dt class="mono">${esc(new Date(r.at).toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }))}</dt><dd>${esc(r.summary || r.mode || '')}${r.errors && r.errors.length ? `<div class="sub err">${esc(r.errors.length + ' problem' + (r.errors.length > 1 ? 's' : '') + ': ' + r.errors.slice(0, 2).join('; '))}</div>` : ''}</dd>`).join('')}</dl>` : '<p class="hint">No update runs recorded yet.</p>'}</div></div>`;
+  h += `<div class="grid2"><div class="card"><div class="label" style="margin-bottom:8px">Export</div><div class="formbar"><button class="btn" data-act="csv" data-k="runners">Runners CSV</button><button class="btn" data-act="csv" data-k="picks">Picks CSV</button><button class="btn" data-act="csv" data-k="intel">Intel CSV</button></div><p class="hint">Downloads a file you can open in Excel or Google Sheets.</p></div>
+    <div class="card"><div class="label" style="margin-bottom:8px">Settings</div><form id="setForm" class="fgrid"><div class="field"><label for="st-comm">Betfair commission (%)</label><input id="st-comm" type="number" step="0.5" min="0" max="20" value="${esc(S.settings.commission)}"></div><div class="field"><label for="st-stake">Default stake ($)</label><input id="st-stake" type="number" step="0.5" min="0" value="${esc(S.settings.stake)}"></div><div class="formbar field wide"><button class="btn" type="submit">Save settings</button></div></form></div></div>`;
+  h += `<div class="card"><div class="label" style="margin-bottom:8px">Connection</div><p class="hint" style="margin:0 0 8px">Reading <b>${esc(conn.owner)}/${esc(conn.repo)}</b> on GitHub${S.lastSync ? ', last checked ' + esc(ago(new Date(S.lastSync).toISOString())) : ''}. The page checks for new data every minute while it’s open.</p><div class="formbar"><a class="btn" href="https://github.com/${encodeURIComponent(conn.owner)}/${encodeURIComponent(conn.repo)}/actions" target="_blank" rel="noopener noreferrer">Update history on GitHub ↗</a><span data-del-wrap="conn"><button class="btn ghost" data-act="disconnect">Disconnect this device</button></span></div></div>`;
+  h += `<p class="hint">Sources: racing.com fields, results and stewards’ reports; racing news headlines from Australian news sites; your own intel. Stewards’ notes are stored as short flags with a link to the full report.</p>`;
+  v.innerHTML = h;
+  const sf = $('#setForm'); if (sf) sf.onsubmit = async e => { e.preventDefault(); const d = { commission: num($('#st-comm').value) ?? 0, stake: num($('#st-stake').value) ?? 10 }; try { await saveSettings(d); toast('Settings saved.'); } catch (err) { toast(writeErr(err), 8000); } };
+}
+function csvCell(v) { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+function exportCSV(kind) {
+  let rows = [];
+  if (kind === 'runners') { rows.push(['date', 'track', 'state', 'race', 'race_name', 'start', 'distance', 'class', 'rating', 'rail', 'race_time', 'pos', 'no', 'horse', 'barrier', 'jockey', 'trainer', 'weight', 'form', 'career', 'rating_hcp', 'settled_800_400', 'margin', 'open_fixed', 'last_fixed', 'sp', 'tote_win', 'tote_place', 'bsp', 'stewards_flags', 'race_flags']); allList().sort((a, b) => a.date.localeCompare(b.date) || a.trk.localeCompare(b.trk) || a.n - b.n).forEach(r => runnersOf(r).forEach(x => rows.push([r.date, r.trk, r.st, r.n, r.nm, r.tm, r.dist, r.cls, r.rt, r.rail, r.time, x.p ?? x.pt, x.no, x.h, x.b, x.j, x.tr, x.w, x.fm, x.cr, x.rtg, x.s, x.m, x.od0?.w, x.od?.w, x.sp, x.tw, x.tp, x.bsp, (x.tg || []).join('; '), (r.sf || []).join('; ')]))); }
+  if (kind === 'picks') { rows.push(['date', 'track', 'race', 'horse', 'bet_type', 'rated', 'odds_taken', 'place_odds', 'stake', 'bookie', 'result', 'finish', 'closing_price', 'profit', 'clv', 'notes']); gradedPicks().forEach(({ pk, g }) => rows.push([pk.date, pk.trk, pk.raceN, pk.horse, pk.betType, pk.rated, pk.odds, pk.placeOdds, pk.stake, pk.bookie, g.status, g.pos, g.closing, g.profit == null ? '' : g.profit.toFixed(2), g.clv == null ? '' : g.clv.toFixed(4), pk.notes])); }
+  if (kind === 'intel') { rows.push(['date', 'type', 'track', 'race', 'horses', 'text', 'source', 'url', 'added', 'by']); S.intel.forEach(i => rows.push([i.date, i.type, i.trk, i.raceN, (i.horses || []).join('; '), i.text, i.src, i.url, i.createdAt, i.by])); }
+  const csv = '﻿' + rows.map(r => r.map(csvCell).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `racebook-${kind}-${iso()}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+/* ---------- misc ---------- */
+function emptyHTML(t, s) { return `<div class="empty"><b>${esc(t)}</b>${esc(s || '')}</div>`; }
+function confirmInline(wrap, label, onYes) {
+  const orig = wrap.innerHTML;
+  wrap.innerHTML = `<span class="confirm">${esc(label)} <button class="btn small" data-yes>Yes</button><button class="btn small ghost" data-no>No</button></span>`;
+  wrap.querySelector('[data-yes]').onclick = e => { e.stopPropagation(); onYes(); };
+  wrap.querySelector('[data-no]').onclick = e => { e.stopPropagation(); wrap.innerHTML = orig; };
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act], .tab'); if (!t) return;
+  if (t.classList.contains('tab')) { setView(t.dataset.view); return; }
+  const a = t.dataset.act;
+  if (a === 'meet') { S.selMeet = t.dataset.slug; ls.set('meet', S.selMeet); S.openRace = null; S.openRunner = null; renderRacebook(); }
+  else if (a === 'race') { S.openRace = S.openRace === t.dataset.id ? null : t.dataset.id; S.openRunner = null; renderRacebook(); }
+  else if (a === 'runner') { if (e.target.closest('button')) return; const k = t.dataset.id + '|' + t.dataset.k; S.openRunner = S.openRunner === k ? null : k; if (S.openRunner) loadAllRaces(); renderRacebook(); }
+  else if (a === 'date-prev' || a === 'date-next') { const i = S.dates.indexOf(S.selDate) + (a === 'date-prev' ? 1 : -1); if (S.dates[i]) { selectDay(S.dates[i]); renderRacebook(); } }
+  else if (a === 'log-pick') { e.stopPropagation(); const r = S.dayRaces.find(x => x.id === t.dataset.id) || S.allRaces?.get(t.dataset.id); if (r) S.pickPrefill = { date: r.date, slug: r.slug, raceId: r.id, horse: t.dataset.h }; setView('picks'); const p = $('#pickPanel'); if (p) { p.open = true; p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
+  else if (a === 'intel-for-race') { const r = S.dayRaces.find(x => x.id === t.dataset.id); if (r) S.intelPrefill = { date: r.date, trk: r.trk, slug: r.slug, raceN: r.n, type: 'note' }; setView('intel'); }
+  else if (a === 'split') { S.splitBy = t.dataset.k; renderPicks(); }
+  else if (a === 'ifilter') { S.intelFilter = t.dataset.k; renderIntel(); }
+  else if (a === 'lkind') { S.lookup = { kind: t.dataset.k, q: '' }; ls.set('lookup', S.lookup); renderLookup(); }
+  else if (a === 'lookup-horse') { S.lookup = { kind: 'horse', q: t.dataset.h }; ls.set('lookup', S.lookup); setView('lookup'); }
+  else if (a === 'del-pick') { const w = t.closest('[data-del-wrap]'); confirmInline(w, 'Delete?', async () => { try { await delPick(t.dataset.id); toast('Pick deleted.'); } catch (err) { toast(writeErr(err), 8000); } }); }
+  else if (a === 'del-intel') { const w = t.closest('[data-del-wrap]'); confirmInline(w, t.dataset.auto ? 'Hide?' : 'Delete?', async () => { try { await delIntel(t.dataset.id); toast(t.dataset.auto ? 'Hidden.' : 'Intel deleted.'); } catch (err) { toast(writeErr(err), 8000); } }); }
+  else if (a === 'disconnect') { const w = t.closest('[data-del-wrap]'); confirmInline(w, 'Forget the key on this device?', () => disconnect()); }
+  else if (a === 'csv') exportCSV(t.dataset.k);
+});
+document.addEventListener('change', e => { if (e.target.id === 'dateSel') { selectDay(e.target.value); renderRacebook(); } });
+$('#refreshBtn').addEventListener('click', requestUpdate);
+document.addEventListener('pointermove', e => {
+  const box = e.target.closest && e.target.closest('.chartbox[data-pnl]'); if (!box) return;
+  const svg = box.querySelector('svg'), tip = box.querySelector('.tip'), hov = svg.querySelector('.hov');
+  const pts = JSON.parse(box.dataset.pnl); const r = svg.getBoundingClientRect(); const sx = (e.clientX - r.left) / r.width * 640;
+  let best = pts[0]; pts.forEach(p => { if (Math.abs(p[0] - sx) < Math.abs(best[0] - sx)) best = p; });
+  hov.setAttribute('x1', best[0]); hov.setAttribute('x2', best[0]); hov.setAttribute('visibility', 'visible');
+  tip.innerHTML = `<b>${esc(best[2])}</b><br>${esc(best[3])}`; tip.style.left = (best[0] / 640 * r.width) + 'px'; tip.style.top = (best[1] / 220 * r.height) + 'px'; tip.classList.add('on');
+});
+document.addEventListener('pointerleave', e => { }, true);
+document.addEventListener('pointerout', e => { const box = e.target.closest && e.target.closest('.chartbox[data-pnl]'); if (box && !box.contains(e.relatedTarget)) { box.querySelector('.tip').classList.remove('on'); box.querySelector('.hov').setAttribute('visibility', 'hidden'); } });
+
+const startView = (location.hash || '').replace('#', '');
+if (['racebook', 'picks', 'intel', 'lookup', 'data'].includes(startView)) S.view = startView;
+$$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === S.view)));
+$$('.view').forEach(s => s.hidden = s.id !== 'view-' + S.view);
+async function start() {
+  $('#view-connect').hidden = true;
+  $('#tabs').hidden = false;
+  $$('.view').forEach(x => x.hidden = x.id !== 'view-' + S.view);
+  renderAll();
+  if (await loadCache()) { buildState(); S.ready = true; renderAll(); }
+  await sync();
+  schedulePoll();
+}
+if (conn.token) start(); else showConnect();
+})();
+</script>
+</body>
+</html>
